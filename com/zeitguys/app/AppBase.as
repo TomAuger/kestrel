@@ -1,26 +1,21 @@
 package com.zeitguys.app {
-	import com.zeitguys.app.view.ModalFactory;
-	import com.zeitguys.app.view.ModalView;
-	import com.zeitguys.app.view.transition.TransitionBase;
-	import com.zeitguys.app.view.ViewBase;
 	import com.zeitguys.app.model.AppConfigModel;
-	import com.zeitguys.app.model.ScreenRouter;
 	import com.zeitguys.app.model.ILocalizable;
 	import com.zeitguys.app.model.IScreenList;
 	import com.zeitguys.app.model.Localizer;
+	import com.zeitguys.app.model.ScreenRouter;
+	import com.zeitguys.app.view.ModalFactory;
+	import com.zeitguys.app.view.ModalView;
+	import com.zeitguys.app.view.ScreenView;
+	import com.zeitguys.app.view.ViewBase;
+	import com.zeitguys.app.view.transition.TransitionBase;
 	import com.zeitguys.app.view.transition.TransitionManagerBase;
 	import com.zeitguys.util.ClipUtils;
 	import com.zeitguys.util.ObjectUtils;
+	
+	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.MovieClip;
-	import flash.events.Event;
-	import flash.events.StageOrientationEvent;
-	import flash.geom.Rectangle;
-	import flash.text.StyleSheet;
-	import flash.utils.getQualifiedClassName;
-	import com.zeitguys.app.model.IScreenList;
-	import com.zeitguys.app.view.ScreenView;
 	import flash.display.MovieClip;
 	import flash.display.Stage;
 	import flash.display.StageAlign;
@@ -28,8 +23,11 @@ package com.zeitguys.app {
 	import flash.display.StageScaleMode;
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
+	import flash.events.StageOrientationEvent;
+	import flash.geom.Rectangle;
 	import flash.system.Capabilities;
-	import flash.desktop.NativeApplication;
+	import flash.text.StyleSheet;
+	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * ...
@@ -48,6 +46,7 @@ package com.zeitguys.app {
 		public static const APP_STATE_SUSPENDING:String = "suspending";
 		public static const APP_STATE_PAUSED:String = "paused";
 		
+		protected var _defaultOrientation:String;
 		
 		protected var _screenList:IScreenList; // Set this within child class constructor
 		protected var _currentScreen:ScreenView;
@@ -158,7 +157,7 @@ package com.zeitguys.app {
 			_osVersion = getDeviceOSVersion();
 			trace("OS: '" + deviceOS + "' Version: " + _osVersion + " detected");
 			
-			_deviceSize = getDevicePixelDimensions();
+			_deviceSize = getDevicePixelDimensions(_defaultOrientation);
 			trace("Screen Size detected at: " + _deviceSize);
 			
 			trace("Content offset: " + contentOffset);
@@ -172,6 +171,14 @@ package com.zeitguys.app {
 			_appConfig.load();
 		}
 		
+		public function set defaultOrientation(orientation:String):void {
+			if ([ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT].indexOf(orientation) > -1){
+				_defaultOrientation = orientation;
+			} else {
+				throw new ArgumentError("Invalid orientation: " + orientation);
+			}
+		}
+		
 		/**
 		 * Gets the dimensions of the device in pixels. Can only be called after ADDED_TO_STAGE.
 		 * 
@@ -180,11 +187,20 @@ package com.zeitguys.app {
 		 * @return
 		 */
 		public function getDevicePixelDimensions(orientation:String = ORIENTATION_PORTRAIT, OSAdjustment:Boolean = true):Rectangle {
+			var dimensions:Rectangle;
+			
 			if (stage){
-				var dimensions:Rectangle = new Rectangle(0, 0,
-					Math.min(stage.fullScreenWidth, stage.fullScreenHeight),
-					Math.max(stage.fullScreenWidth, stage.fullScreenHeight)
-				);
+				if (ORIENTATION_LANDSCAPE == orientation){
+					dimensions = new Rectangle(0, 0,
+						Math.max(stage.fullScreenWidth, stage.fullScreenHeight),
+						Math.min(stage.fullScreenWidth, stage.fullScreenHeight)
+					)
+				} else {
+					dimensions = new Rectangle(0, 0,
+						Math.min(stage.fullScreenWidth, stage.fullScreenHeight),
+						Math.max(stage.fullScreenWidth, stage.fullScreenHeight)
+					);
+				}
 				
 				return dimensions;
 			} else {
