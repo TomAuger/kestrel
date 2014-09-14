@@ -1,11 +1,8 @@
 package com.zeitguys.app {
-	import com.zeitguys.app.error.FlashConstructionError;
-	import com.zeitguys.app.view.ActionSheetModalView;
 	import com.zeitguys.app.view.ModalFactory;
 	import com.zeitguys.app.view.ModalView;
 	import com.zeitguys.app.view.transition.TransitionBase;
 	import com.zeitguys.app.view.ViewBase;
-	import com.zeitguys.ios.model.AppModel;
 	import com.zeitguys.app.model.AppConfigModel;
 	import com.zeitguys.app.model.ScreenRouter;
 	import com.zeitguys.app.model.ILocalizable;
@@ -31,7 +28,6 @@ package com.zeitguys.app {
 	import flash.display.StageScaleMode;
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
-	import flash.events.EventDispatcher;
 	import flash.system.Capabilities;
 	import flash.desktop.NativeApplication;
 	
