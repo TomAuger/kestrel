@@ -1,21 +1,31 @@
 package com.zeitguys.app {
+	import com.zeitguys.app.error.FlashConstructionError;
+	import com.zeitguys.app.model.AssetLoader;
+	import com.zeitguys.app.view.ActionSheetModalView;
+	import com.zeitguys.app.view.ModalFactory;
+	import com.zeitguys.app.view.ModalView;
+	import com.zeitguys.app.view.transition.TransitionBase;
+	import com.zeitguys.app.view.ViewBase;
+	import com.zeitguys.ios.model.AppModel;
 	import com.zeitguys.app.model.AppConfigModel;
+	import com.zeitguys.app.model.ScreenRouter;
 	import com.zeitguys.app.model.ILocalizable;
 	import com.zeitguys.app.model.IScreenList;
 	import com.zeitguys.app.model.Localizer;
-	import com.zeitguys.app.model.ScreenRouter;
-	import com.zeitguys.app.view.ModalFactory;
-	import com.zeitguys.app.view.ModalView;
-	import com.zeitguys.app.view.ScreenView;
-	import com.zeitguys.app.view.ViewBase;
-	import com.zeitguys.app.view.transition.TransitionBase;
 	import com.zeitguys.app.view.transition.TransitionManagerBase;
 	import com.zeitguys.util.ClipUtils;
 	import com.zeitguys.util.ObjectUtils;
-	
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.MovieClip;
+	import flash.events.Event;
+	import flash.events.StageOrientationEvent;
+	import flash.geom.Rectangle;
+	import flash.text.StyleSheet;
+	import flash.utils.getQualifiedClassName;
+	import com.zeitguys.app.model.IScreenList;
+	import com.zeitguys.app.view.ScreenView;
 	import flash.display.MovieClip;
 	import flash.display.Stage;
 	import flash.display.StageAlign;
@@ -23,17 +33,16 @@ package com.zeitguys.app {
 	import flash.display.StageScaleMode;
 	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
-	import flash.events.StageOrientationEvent;
-	import flash.geom.Rectangle;
+	import flash.events.EventDispatcher;
 	import flash.system.Capabilities;
-	import flash.text.StyleSheet;
-	import flash.utils.getQualifiedClassName;
+	import flash.desktop.NativeApplication;
 	
 	/**
 	 * ...
 	 * @author TomAuger
 	 */
 	public class AppBase extends MovieClip {
+		public static const EVENT_LANGUAGE_CHANGED:String = 'event-language-changed';
 		public static const EVENT_MODAL_DIALOG_CLOSED:String = 'event-modal-closed';
 		
 		public static const ORIENTATION_LANDSCAPE:String = "landscape";
@@ -46,7 +55,6 @@ package com.zeitguys.app {
 		public static const APP_STATE_SUSPENDING:String = "suspending";
 		public static const APP_STATE_PAUSED:String = "paused";
 		
-		protected var _defaultOrientation:String;
 		
 		protected var _screenList:IScreenList; // Set this within child class constructor
 		protected var _currentScreen:ScreenView;
@@ -70,6 +78,7 @@ package com.zeitguys.app {
 		private var _deviceSize:Rectangle;
 		private var _osVersion:uint;
 		private var _appState:String;
+		private var _inTransition:Boolean = false;
 		
 		private var _transitionManager:TransitionManagerBase;
 		
@@ -157,7 +166,7 @@ package com.zeitguys.app {
 			_osVersion = getDeviceOSVersion();
 			trace("OS: '" + deviceOS + "' Version: " + _osVersion + " detected");
 			
-			_deviceSize = getDevicePixelDimensions(_defaultOrientation);
+			_deviceSize = getDevicePixelDimensions();
 			trace("Screen Size detected at: " + _deviceSize);
 			
 			trace("Content offset: " + contentOffset);
@@ -171,14 +180,6 @@ package com.zeitguys.app {
 			_appConfig.load();
 		}
 		
-		public function set defaultOrientation(orientation:String):void {
-			if ([ORIENTATION_LANDSCAPE, ORIENTATION_PORTRAIT].indexOf(orientation) > -1){
-				_defaultOrientation = orientation;
-			} else {
-				throw new ArgumentError("Invalid orientation: " + orientation);
-			}
-		}
-		
 		/**
 		 * Gets the dimensions of the device in pixels. Can only be called after ADDED_TO_STAGE.
 		 * 
@@ -187,20 +188,11 @@ package com.zeitguys.app {
 		 * @return
 		 */
 		public function getDevicePixelDimensions(orientation:String = ORIENTATION_PORTRAIT, OSAdjustment:Boolean = true):Rectangle {
-			var dimensions:Rectangle;
-			
 			if (stage){
-				if (ORIENTATION_LANDSCAPE == orientation){
-					dimensions = new Rectangle(0, 0,
-						Math.max(stage.fullScreenWidth, stage.fullScreenHeight),
-						Math.min(stage.fullScreenWidth, stage.fullScreenHeight)
-					)
-				} else {
-					dimensions = new Rectangle(0, 0,
-						Math.min(stage.fullScreenWidth, stage.fullScreenHeight),
-						Math.max(stage.fullScreenWidth, stage.fullScreenHeight)
-					);
-				}
+				var dimensions:Rectangle = new Rectangle(0, 0,
+					Math.min(stage.fullScreenWidth, stage.fullScreenHeight),
+					Math.max(stage.fullScreenWidth, stage.fullScreenHeight)
+				);
 				
 				return dimensions;
 			} else {
@@ -287,6 +279,8 @@ package com.zeitguys.app {
 		 * @param	event
 		 */
 		protected function appReady(event:Event):void {
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, appReady);
+			
 			appState = APP_STATE_READY;
 			
 			initAppStateHandling();
@@ -343,15 +337,34 @@ package com.zeitguys.app {
 			resumeApp();
 		}
 		
+		/**
+		 * Resume the app after bricking. 
+		 * 
+		 * Calls `resume()` on the current screen.
+		 * @see ScreenView.resume()
+		 * 
+		 * Calls {@link /activateApp()} and changes app state.
+		 * 
+		 * This will skip if we're in transition and put the App into a "ready" state. 
+		 * In that case, it's expected that when the transition completes, resumeApp() is called again.
+		 */
 		protected function resumeApp():void {
-			trace( "RESUMING APP! Sleep timer at " + _sleepFrames );
-			
-			activateApp();
-			
-			if (_currentScreen) {
-				_currentScreen.resume();
+			if (! this.isTransitioning) {
+				trace( "RESUMING APP! Sleep timer at " + _sleepFrames );
+				
+				if (_currentScreen) {
+					_currentScreen.resume();
+				}
+				
+				if (isModal) {
+					_currentModal.activate();
+				}
+				activateApp();
+				appState = APP_STATE_ACTIVE;
+			} else {
+				trace("RESUMING APP delayed (currently in transition)");
+				appState = APP_STATE_READY;
 			}
-			appState = APP_STATE_ACTIVE;
 		}
 		
 		/**
@@ -363,6 +376,10 @@ package com.zeitguys.app {
 		protected function pauseApp( event:Event ):void {
 			if (_currentScreen) {
 				_currentScreen.pause();
+			}
+			
+			if (isModal) {
+				_currentModal.deactivate();
 			}
 			
 			deactivateApp();
@@ -417,7 +434,7 @@ package com.zeitguys.app {
 			appState = APP_STATE_PAUSED;
 		}
 		
-		private function set appState(state:String):void {
+		protected function set appState(state:String):void {
 			if ( APP_STATE_ACTIVE == state ) {
 				trace( " " );
 			}
@@ -430,8 +447,27 @@ package com.zeitguys.app {
 			}
 		}
 		
-		private function get appState():String {
+		protected function get appState():String {
 			return _appState;
+		}
+		
+		public function get isActive():Boolean {
+			return APP_STATE_ACTIVE == _appState;
+		}
+		
+		public function get isReady():Boolean {
+			return APP_STATE_READY == _appState || APP_STATE_ACTIVE == _appState;
+		}
+		
+		public function get isTransitioning():Boolean {
+			trace("(queried) APP TRANSITION STATE:", _inTransition);
+			return _inTransition;
+		}
+		
+		public function set inTransition(transitioning:Boolean):void {
+			_inTransition = transitioning;
+			
+			trace("APP TRANSITION STATE:", _inTransition);
 		}
 		
 		//--------------------------------------------------------------------------------------------------------
@@ -518,7 +554,7 @@ package com.zeitguys.app {
 			_screenList = list;
 			_screenRouter.processScreenList(_screenList);
 			
-			transitionManager = new TransitionManagerBase(getDevicePixelDimensions());
+			setTransitionManager();
 		}
 		
 		/**
@@ -533,6 +569,13 @@ package com.zeitguys.app {
 		
 		public function get router():ScreenRouter {
 			return _screenRouter;
+		}
+		
+		/**
+		 * Override in child apps that need to use a custom TransitionManager
+		 */
+		protected function setTransitionManager():void {
+			transitionManager = new TransitionManagerBase(getDevicePixelDimensions(), this);
 		}
 		
 		/**
@@ -557,6 +600,11 @@ package com.zeitguys.app {
 			return _CurrentTransition;
 		}
 		
+		/**
+		 * The CurrentTransition (Class) is passed to the TransitionManager on `transition()`.
+		 * This tells TransitionManager what Transition to use, so set CurrentTransition
+		 * _before_ you initiate an action that will fire a transition (basically, `setScreen()`).
+		 */
 		public function set CurrentTransition(TransitionClass:Class):void {
 			trace ("<--> Setting App TRANSITION to " + TransitionClass);
 			_CurrentTransition = TransitionClass;
@@ -565,16 +613,26 @@ package com.zeitguys.app {
 		/**
 		 * Triggered by ScreenRouter.EVENT_SCREEN_CHANGED.
 		 * 
+		 * @see ScreenRouter.setScreen()
+		 * 
 		 * @param	event
 		 */
 		private function onScreenChange(event:Event):void {
+			inTransition = true;
+			
 			_transitionManager.addEventListener(TransitionManagerBase.EVENT_TRANSITION_COMPLETE, onTransitionComplete);
 			_transitionManager.transition(_screenRouter.currentScreen, CurrentTransition);
 		}
 		
 		private function onTransitionComplete(event:Event):void {
 			_transitionManager.removeEventListener(TransitionManagerBase.EVENT_TRANSITION_COMPLETE, onTransitionComplete);
+			inTransition = false;
 			
+			// If the appstate is "READY" because we debricked while in transition (is this even possible?)
+			// then set the appstate to ACTIVE.
+			if (APP_STATE_READY == appState) {
+				
+			}
 			
 			// Reset the current transition back to default
 			trace("<--> RESET transition");
@@ -584,19 +642,17 @@ package com.zeitguys.app {
 		}
 		
 		/**
-		 * Child app can hook into this for additional processing once screen transition is done.
+		 * Activate the current screen.
 		 * 
-		 * Default functionality:
-			 * Always run the `setup()` method.
-			 * If a screen reset is requested, run the `reset()` method on the screen.
-			 * Finally, `activate()` the screen.
+		 * Well, stashes the current screen, and calls ScreenView.onTransitionComplete() - which calls ScreenView.activate()
+		 * 
+		 * Child app can hook into this for additional processing once screen transition is done.
 		 * 
 		 * @param	currentScreen
 		 */
 		protected function screenTransitionComplete(currentScreen:ScreenView):void {
 			_currentScreen = currentScreen;
 			_currentScreen.onTransitionComplete();
-			_currentScreen.activate();
 		}
 		
 		
@@ -630,11 +686,19 @@ package com.zeitguys.app {
 			_nextScreen = nextScreen;
 			localizer.addEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
 			localizer.language = language;
+			_appConfig.currentLanguage = localizer.language;
 		}
 		
 		protected function onLanguageChanged(e:Event):void {
 			localizer.removeEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
-			router.setScreen(_nextScreen);
+			dispatchEvent(new Event(EVENT_LANGUAGE_CHANGED));
+			var loader:AssetLoader = AssetLoader.getInstance();
+			trace(loader.queue);
+			if (loader.queue) {
+				router.setScreen('main__loader');
+			} else {
+				router.setScreen(_nextScreen);
+			}
 		}
 		
 		/**
