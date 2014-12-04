@@ -168,7 +168,7 @@ package com.zeitguys.kestrel.app {
 			_deviceSize = getDevicePixelDimensions();
 			trace("Screen Size detected at: " + _deviceSize);
 			
-			trace("Content offset: " + contentOffset);
+			trace("Content Y-offset due to OS status bar and version: " + contentOffset);
 			
 			init();
 			
