@@ -317,7 +317,7 @@ package com.zeitguys.kestrel.app {
 					resumeApp();
 				}
 			} else {
-				trace( "FALSE resume app sent - are you Debugging in simulator? Ignoring." );
+				trace( "FALSE 'resume app' APP STATE event sent - ignoring. Are you Debugging in simulator? " );
 			}
 		}
 		
