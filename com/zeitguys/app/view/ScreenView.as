@@ -5,10 +5,11 @@ package com.zeitguys.app.view
 	import com.zeitguys.app.model.ILocalizable;
 	import com.zeitguys.app.model.Localizer;
 	import com.zeitguys.app.model.ScreenBundle;
+	import com.zeitguys.app.view.transition.TransitionBase;
 	import com.zeitguys.app.view.ViewBase;
-	import com.zeitguys.app.model.vo.ModalButtonData;
 	import com.zeitguys.app.view.asset.ScreenAssetView;
 	import com.zeitguys.ios.MultiResolutionApp;
+	import com.zeitguys.util.ObjectUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
@@ -33,7 +34,7 @@ package com.zeitguys.app.view
 	 * 
 	 * @author TomAuger
 	 */
-	public class ScreenView extends ViewBase implements ILocalizable {
+	public class ScreenView extends ViewBase {
 		public static const EVENT_SCREEN_LOADED:String = 'screen-loaded';
 		public static const EVENT_SCREEN_READY:String = 'screen-ready';
 		public static const EVENT_SCREEN_ACTIVATED:String = 'screen-activated';
@@ -51,7 +52,6 @@ package com.zeitguys.app.view
 		protected var _screenRouter:ScreenRouter;
 		protected var _assets:Vector.<ScreenAssetView> = new Vector.<ScreenAssetView>;
 		protected var _textFields:Array = [];
-		protected var _screenModals:Object = { };
 		
 		public var bundleIndex:uint;
 		
@@ -60,7 +60,8 @@ package com.zeitguys.app.view
 		protected var _screenLoaded:Boolean = false;
 		protected var _screenReady:Boolean = false;
 		protected var _screenActivated:Boolean = false; // use status to tell whether a screen has been activated. This is used to determine whether first-run initialization activites should take place
-		protected var _transitionArgs:Object = {};
+		protected var _transitionArgs:Object = { };
+		protected var _TransitionOut:Class;
 		
 		protected var _flexGroups:Vector.<FlexGroup> = new Vector.<FlexGroup>;
 		
@@ -176,7 +177,7 @@ package com.zeitguys.app.view
 		 * Localize all assets. Child classes may wish to override and localize other
 		 * items as well. Just remember to call super.localize() as well!
 		 */
-		public function localize(localizer:Localizer):void {
+		override public function localize(localizer:Localizer):void {
 			trace("LOCALIZING: " + id);
 			
 			localizeModals(localizer);
@@ -189,61 +190,6 @@ package com.zeitguys.app.view
 			for each (var flexGroup:FlexGroup in _flexGroups) {
 				flexGroup.update();
 			}
-		}
-		
-		protected function defineModals():void {
-			
-		}
-		
-		protected function addModal(id:String, bodyText:String = "", ... modalArgs):ModalView {
-			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
-			
-			_screenModals[id] = modal;
-			
-			return modal;
-		}
-		
-		protected function localizeModals(localizer:Localizer):void {
-			var alertID:String,
-				item:Object,
-				modal:ModalView,
-				button:ModalButtonData;
-				
-			for (alertID in _screenModals) {
-				item = _screenModals[id];
-				if (item is ModalView) {
-					modal = ModalView(item);
-					
-					// Got the modal. Localize it.
-					modal.setBodyText(localizer.getModalComponentText(alertID, 'body'));
-					
-					for each (button in modal.buttons) {
-						button.label = localizer.getModalComponentText(alertID, button.id);
-					}
-				} else {
-					throw new Error("Error with Screen Modals structure.");
-				}
-			}
-		}
-		
-		protected function getModal(id:String):ModalView {
-			if (_screenModals.hasOwnProperty(id)) {
-				return ModalView(_screenModals[id]);
-			} else {
-				throw new RangeError("Modal with ID '" + id + "' has not been defined!");
-			}
-		}
-		
-		protected function setModal(id:String):ModalView {
-			var modal:ModalView = getModal(id);
-			
-			app.currentModal = modal;
-			
-			return modal;
-		}
-		
-		protected function getModalComponentText(localizer:Localizer, alertID:String, component:String):String {
-			return localizer.getModalComponentText(alertID, component);
 		}
 		
 		/**
@@ -287,10 +233,36 @@ package com.zeitguys.app.view
 		}
 		
 		/**
-		 * Override in child classes to set the "default" TransitionClass for this screen by setting app.CurrentTransition.
+		 * Call this before onTransitionComplete() to set the transition when leaving this screen.
+		 */
+		public function set TransitionOut(TransitionClass:Class):void {
+			if (ObjectUtils.inheritsFrom(TransitionClass, TransitionBase)) {
+				_TransitionOut = TransitionClass;
+			} else {
+				throw new ArgumentError(TransitionClass + " must inherit from TransitionBase");
+			}
+		}
+		
+		/**
+		 * Called by AppBase.screenTransitionComplete().
+		 * 
+		 * Child screens may override this to do things post transition, but prior to activation.
+		 * 
+		 * If _TransitionOut has been defined somewhere earlier in the cycle, it will be set here,
+		 * defining the transition that will be used when this screen is exited.
+		 * 
+		 * If you are running any animations on the screen after the transition, but before activation,
+		 * you may use super.onTransitionComplete as your animation complete callback.
 		 */
 		public function onTransitionComplete():void {
+			if (_TransitionOut) {
+				app.CurrentTransition = _TransitionOut;
+			}
 			
+			// If the app is bricked or suspending, then this will not fire.
+			if (app.isReady){
+				activate();
+			}
 		}
 		
 		/**
@@ -319,6 +291,43 @@ package com.zeitguys.app.view
 		}
 		
 		/**
+		 * Override in child classes when you wnat to handle reactivation from app paused state.
+		 */
+		public function resume():void {
+			trace(id + " RESUMING");
+			
+			activate();
+		}
+		
+		/**
+		 * Called when a modal dialog is dismissed on this screen.
+		 * 
+		 * Child classes can override this method in order to restore anything
+		 * that might have been halted on {@link /enterModal()}.
+		 * 
+		 * Remember to call super.exitModal().
+		 */
+		public function exitModal():void {
+			trace(id + " exiting MODAL");
+			
+			activate();
+		}
+		
+		/**
+		 * Called when a modal dialog is invoked on this screen.
+		 * 
+		 * Child classes can override this method in order to do something specifially
+		 * when a modal is invoked.
+		 * 
+		 * Remember to call super.enterModal().
+		 */
+		public function enterModal():void {
+			trace(id + " entering MODAL");
+			
+			deactivate();
+		}
+		
+		/**
 		 * Override in child classes when you want to handle deactivation due to app pausing.
 		 */
 		public function pause():void {
@@ -328,44 +337,42 @@ package com.zeitguys.app.view
 		}
 		
 		/**
+		 * All child classes must override `deactivate()` to unregister event listeners
+		 * and kill any processes that should not be running when the screen is not active.
 		 * 
+		 * Screens are deactivated when:
+			 * The app is paused
+			 * The app goes modal
+			 * The screen starts to transition out
+		 *
+		 * Remember to call super.deactivate() so all registered screen assets
+		 * are automatically deactivated as well.
 		 */
-		public function enterModal():void {
-			trace(id + " entering MODAL");
-			
-			deactivate();
-		}
-		
-		/**
-		 * Override in child classes when you wnat to handle reactivation from app paused state.
-		 */
-		public function resume():void {
-			trace(id + " RESUMING");
-			
-			activate();
-		}
-		
-		public function exitModal():void {
-			trace(id + " exiting MODAL");
-			
-			activate();
-		}
-		
-		
 		public function deactivate():void {
 			deactivateAssets();
 			
 			trace(id + " DEACTIVATED");
 		}
 		
-		public function deactivateAssets():void {
+		/**
+		 * Deactivate all screen assets. Called by {@link /deactivate()}
+		 */
+		private function deactivateAssets():void {
 			trace("--------------------------------------\n" + id + " DEACTIVATING Assets");
 			for each (var asset:ScreenAssetView in _assets) {
 				asset.deactivate();
 			}
 		}
 		
-		
+		/**
+		 * Child classes should override this if they wish to trigger an action
+		 * upon leaving the screen. This is called after {@link /deactivate()},
+		 * so you must assume that all assets are no deactivated, event
+		 * listeners have been killed etc.
+		 */
+		public function onTransitionOut():void {
+			
+		}
 		
 		
 		

@@ -142,7 +142,8 @@ package com.zeitguys.app.view {
 		protected function get defaultButtons():Array {
 			return [
 				ModalView.BUTTON_OK,
-				ModalView.BUTTON_CANCEL
+				ModalView.BUTTON_CANCEL,
+				ModalView.BUTTON_MISC
 			];
 		}
 		

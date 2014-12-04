@@ -130,6 +130,50 @@
 			_loader = null;
 			_request = null;
 		}
+		
+		public function get defaultLanguage():String {
+			trace(_data.child('languages').attribute('default_language'));
+			return _data.child('languages').attribute('default_language');
+		}
+		
+		public function get currentLanguage():String {
+			trace();
+			trace();
+			trace();
+			trace( 'current language', localStorage.data['language']);
+			trace();
+			trace();
+			trace();
+			return localStorage.data['language'];
+		}
+		
+		public function set currentLanguage(language:String):void {
+			trace('setting app language to remember', language);
+			localStorage.data['language'] = language;
+		}
+		
+		public function get languages():Array {
+			var languages:XMLList = _data.child('languages').children();
+			var output:Array = new Array();
+			for (var i:uint = 0; i < languages.length(); i++) {
+				output.push({ value: languages[i].attribute('code'), label: languages[i] });
+			}
+			return output;
+		}
+		
+		public function getLanguageLabel(language:String = ''):String {
+			language ||= defaultLanguage;
+			for (var i:uint = 0; i < languages.length; i++) {
+				if (language == languages[i].value) {
+					return languages[i].label;
+				}
+			}
+			return '';
+		}
+		
+		public function get data():XML {
+			return _data;
+		}
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.zeitguys.app.view.transition 
 {
+	import com.zeitguys.app.AppBase;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.desktop.NotificationType;
 	import flash.display.MovieClip;
@@ -28,10 +29,12 @@ package com.zeitguys.app.view.transition
 		
 		protected var _transitioning:Array = [];
 		
-		private static var __stageDimensions:Rectangle;
+		private var _stageDimensions:Rectangle;
+		private var _app:AppBase;
 		
-		public function TransitionManagerBase(stageRect:Rectangle) {
-			__stageDimensions = stageRect;
+		public function TransitionManagerBase(stageRect:Rectangle, app:AppBase) {
+			_stageDimensions = stageRect;
+			_app = app;
 			
 			addEventListener(Event.ADDED_TO_STAGE, init);
 		}
@@ -66,6 +69,7 @@ package com.zeitguys.app.view.transition
 					}
 				} else {
 					trace("Transition SKIPPED: new screen IS current screen.");
+					transitionComplete();
 				}
 			} else {
 				_currentScreen = newScreen;
@@ -77,17 +81,20 @@ package com.zeitguys.app.view.transition
 		}
 		
 		public function getStageDimensions():Rectangle {
-			return __stageDimensions;
+			return _stageDimensions;
 		}
 		
 		public function get stageWidth():Number {
-			return __stageDimensions.width;
+			return _stageDimensions.width;
 		}
 		
 		public function get stageHeight():Number {
-			return __stageDimensions.height;
+			return _stageDimensions.height;
 		}
 		
+		public function get app():AppBase {
+			return _app;
+		}
 		
 		
 		/**

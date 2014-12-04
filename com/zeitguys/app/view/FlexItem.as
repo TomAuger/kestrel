@@ -53,6 +53,8 @@ package com.zeitguys.app.view {
 				throw new ArgumentError("Attempting to instantiate FlexItem with a non-DisplayObject and non-ScreenAssetView : " + item.toString());
 			}
 			
+			_clipName = _clip.name;
+			
 			_parent = parentItem;
 			
 			if (textField) {
@@ -123,7 +125,6 @@ package com.zeitguys.app.view {
 		 */
 		public function setItemText(newText:String = "", forceBlank:Boolean = false):void {
 			setText(_textField, newText);
-			
 		}
 		
 		/**

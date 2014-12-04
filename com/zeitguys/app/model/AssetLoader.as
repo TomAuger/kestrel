@@ -218,6 +218,9 @@ package com.zeitguys.app.model
 		public function get complete():Boolean {
 			return (STATUS_STOPPED == _status && 0 == _queue.length);
 		}
+		public function get queue():Number {
+			return _queue.length;
+		}
 		
 	}
 

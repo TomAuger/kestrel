@@ -1,5 +1,6 @@
 package com.zeitguys.app.view.transition {
 	import com.zeitguys.app.view.ScreenView;
+	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	
 	/**
@@ -54,13 +55,16 @@ package com.zeitguys.app.view.transition {
 		 */
 		public function transitionIn():void {
 			trace("--------------------------------------\nTransitioning IN: '" + _incomingScreen.id + "'.");
-			_incomingScreen.attachTo(transitionManager);
 			
 			// No transition
 			endTransitionIn();
 		}
 		
 		/**
+		 * Your child transition class should call endTransitionOut() and endTransitionIn(), but probably won't want
+		 * to override them, preferring instead to override transitionOutComplete() and transitionInComplete() for cleanup
+		 * and detaching.
+		 * 
 		 * To end a transition, your child class MUST call both endTransitionOut() and endTransitionIn().
 		 * 
 		 * This in turn calls TransitionManagerBase.endTransitionOut() and In() respectively,
@@ -69,11 +73,11 @@ package com.zeitguys.app.view.transition {
 		 * Once both have been accounted for, the transition is ended and TransitionManagerBase dispatches EVENT_TRANSITION_COMPLETE.
 		 */
 		protected function endTransitionOut():void {
-			_transitionManager.endTransitionOut();
+			transitionManager.endTransitionOut();
 		}
 		
 		protected function endTransitionIn():void {
-			_transitionManager.endTransitionIn();
+			transitionManager.endTransitionIn();
 		}
 		
 		
@@ -81,7 +85,11 @@ package com.zeitguys.app.view.transition {
 		 * Previous screen's transition out is complete. Perform cleanup of previous screen.
 		 */
 		public function transitionOutComplete():void {
-			_outgoingScreen.detach();
+			if (outgoingScreen) {
+				outgoingScreen.detach();
+			} else {
+				throw new IllegalOperationError("outgoingScreen cannot be found! Are you killing it before transitionOutComplete() or calling endTransitionOut() twice?");
+			}
 			_outgoingScreen = null; // Might want to keep the previous screen in some situations.
 		}
 		
@@ -89,7 +97,8 @@ package com.zeitguys.app.view.transition {
 		 * Incoming screen's transition in is complete. You can activate the screen here, or perhaps better to defer to the app on EVENT_TRANSITION_COMPLETE.
 		 */
 		public function transitionInComplete():void {
-			
+			incomingScreen.attachTo(transitionManager);
+			_incomingScreen = null;
 		}
 	
 	}

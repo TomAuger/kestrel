@@ -37,7 +37,7 @@ package com.zeitguys.app.model.vo {
 			return _label;
 		}
 		
-		public function set label(l:String):void {
+		public function set label(l:String) {
 			_label = label;
 		}
 		

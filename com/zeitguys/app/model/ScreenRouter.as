@@ -80,6 +80,11 @@ package com.zeitguys.app.model
 				// Deactivate the previous screen
 				if (_screenHistory.length > _screenHistoryIndex){
 					_screenHistory[_screenHistoryIndex].deactivate();
+					// @TODO this is not the right place for this.
+					// It should be in AppBase, since that's where we're triggering onTransitionComplete().
+					// But at the moment we won't have access to the previous screen from AppBase, since
+					// history is not properly implemented.
+					_screenHistory[_screenHistoryIndex].onTransitionOut();
 				}
 				
 				// Might want to increment _screenHistoryIndex here if we're using History.
@@ -203,7 +208,8 @@ package com.zeitguys.app.model
 			if (bundle){
 				return bundle.getScreenByID(screenID);
 			} else {
-				throw new RangeError("Could not locate a bundle for '" + screenID + "'.");
+				// Often this is just an erroneous router.setScreen() call with a mis-spelled bundle name.
+				throw new RangeError("Could not locate a bundle for '" + screenID + "'. Maybe you mis-spelled the bundle part of the screen name?");
 			}
 			
 			return null;

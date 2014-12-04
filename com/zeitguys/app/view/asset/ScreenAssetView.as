@@ -41,7 +41,7 @@
 	 *
 	 * @author TomAuger
 	 */
-	public class ScreenAssetView extends ViewBase implements ILocalizable {
+	public class ScreenAssetView extends ViewBase {
 		
 		protected var _screen:ScreenView;
 		protected var _numberFormatter:NumberFormatter;
@@ -156,7 +156,7 @@
 		 * @param	localizer
 		 * @return	Success.
 		 */
-		public function localize(localizer:Localizer):void {
+		override public function localize(localizer:Localizer):void {
 			trace("Localizing " + id);
 			
 			_numberFormatter = localizer.numberFormatter;
@@ -164,6 +164,8 @@
 			if (_textFieldName && _textField) {
 				setText(_textField, getAssetComponentText(localizer, _textFieldName));
 			}
+			
+			super.localize(localizer);
 		}
 		
 		/**

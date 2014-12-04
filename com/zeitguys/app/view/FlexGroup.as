@@ -142,17 +142,34 @@ package com.zeitguys.app.view {
 		 * @see FlexItem.update()
 		 * @see FlexItem.updateChildren()
 		 */
-		public function update():void {
+		public function update():void {			
 			for each (var item:FlexItem in _flexItems) {
 				if (! item.hasParent) {
 					item.update();
 				}
 			}
 			
+			// Recalculate the lowest item, so we can properly scale the background.
+			_lowestItem = getLowestItem();
+			
 			//Now handle scaling the background
 			if (_backgroundItem) {
 				_backgroundItem.height = _lowestItem.bottomY + _backgroundBottomOffsetY - _backgroundInitY;
 			}
+		}
+		
+		public function getLowestItem():FlexItem {
+			var lowestItem:FlexItem;
+			
+			for each (var item:FlexItem in _flexItems) {
+				if (! lowestItem || item.bottomY > lowestItem.bottomY) {
+					lowestItem = item;
+				}
+			}
+			
+			_lowestItem = lowestItem;
+			
+			return lowestItem;
 		}
 		
 		public function get items():Vector.<FlexItem> {

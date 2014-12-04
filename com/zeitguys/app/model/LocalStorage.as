@@ -1,5 +1,4 @@
-package com.zeitguys.app.model 
-{
+package com.zeitguys.app.model {
 	import com.zeitguys.util.DebugUtils;
 	import flash.errors.IllegalOperationError;
 	import flash.net.SharedObject;
@@ -47,6 +46,28 @@ package com.zeitguys.app.model
 			}
 			
 			return so.data;
+		}
+		
+		/**
+		 * removes data from the localstorage object specified.
+		 * 
+		 * @param	storageID
+		 * @param	id
+		 * @return
+		 */
+		public static function remove(storageID:String, id:String = ""):Object {
+			var so:SharedObject = SharedObject.getLocal(storageID);
+			
+			if (id) {
+				DebugUtils.print_r(so.data);
+				if (so.data.hasOwnProperty(id)) {
+					return delete so.data[id];
+				} else {
+					trace("!! SharedObject error: Object '" + storageID + "' data does not have key '" + id + "'.");
+				}
+			}
+			
+			return false;
 		}
 		
 	}

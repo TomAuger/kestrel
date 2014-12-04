@@ -68,7 +68,6 @@ package com.zeitguys.app.model {
 		 */
 		public function setDefaultLanguage(language:String = 'en'):void {
 			defaultLanguage = language;
-			load();	
 		}
 		/**
 		 * Sets the Localizer's language - the order of priority is the following:

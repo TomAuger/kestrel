@@ -47,7 +47,7 @@ package com.zeitguys.app.view {
 			defineFlexItems();
 			
 			populateModal(bodyText, buttons);
-			_flexGroup.update();
+			updateFlexGroup();
 			alignModal(alignmentMode);
 			
 			//setupInteractivity();
@@ -56,7 +56,7 @@ package com.zeitguys.app.view {
 		}
 		
 		public function open():void {
-			setupInteractivity();
+			activate();
 			
 			displayModal();
 		}
@@ -76,7 +76,7 @@ package com.zeitguys.app.view {
 			
 			dispatchEvent(new Event(EVENT_CLOSE));
 			
-			if (buttonData.hasCallback) {
+			if (buttonData && buttonData.hasCallback) {
 				doButtonUpCallback(buttonData.callback);
 			}
 			
@@ -244,6 +244,15 @@ package com.zeitguys.app.view {
 		}
 		
 		/**
+		 * Override in child functions that need to do something before or after the FlexGroup updates.
+		 * 
+		 * Just remember to call `_flexGroup.update()`!
+		 */
+		protected function updateFlexGroup():void {
+			_flexGroup.update();
+		}
+		
+		/**
 		 * Override in child classes to support other alignments.
 		 * 
 		 * Alignment calculations are based on top left registration.
@@ -282,7 +291,7 @@ package com.zeitguys.app.view {
 		 * This pattern allows the user to soft-cancel the interaction by rolling off the 
 		 * originally pressed button before releasing. This provides a nicer UX.
 		 */
-		protected function setupInteractivity() {
+		public function activate() {
 			var buttonData:ModalButtonData;
 			
 			if (_buttons) {
@@ -292,6 +301,22 @@ package com.zeitguys.app.view {
 					buttonData.clip.addEventListener(MouseEvent.RELEASE_OUTSIDE, onButtonReleaseOutside, false, 0, true);
 					
 					buttonData.clip.mouseChildren = false;
+				}
+			}
+		}
+		
+		/**
+		 * Override in a child class - used for disabling interactivity in the Modal
+		 */
+		public function deactivate():void {
+			var buttonData:ModalButtonData;
+			
+			if (_buttons) {
+				for each (buttonData in _buttons) {
+					renderButtonUp(buttonData);
+					buttonData.clip.removeEventListener(MouseEvent.MOUSE_DOWN, onButtonDown, false);
+					buttonData.clip.removeEventListener(MouseEvent.MOUSE_UP, onButtonUp, false);
+					buttonData.clip.removeEventListener(MouseEvent.RELEASE_OUTSIDE, onButtonReleaseOutside, false);
 				}
 			}
 		}
@@ -403,15 +428,7 @@ package com.zeitguys.app.view {
 		 * but that's probably overkill.
 		 */
 		protected function __destroy():void {
-			var buttonData:ModalButtonData;
-			
-			if (_buttons) {
-				for each (buttonData in _buttons) {
-					buttonData.clip.removeEventListener(MouseEvent.MOUSE_DOWN, onButtonDown, false);
-					buttonData.clip.removeEventListener(MouseEvent.MOUSE_UP, onButtonUp, false);
-					buttonData.clip.removeEventListener(MouseEvent.RELEASE_OUTSIDE, onButtonReleaseOutside, false);
-				}
-			}
+			deactivate();
 			
 			_buttons = null;
 			_clip = null;
@@ -435,6 +452,22 @@ package com.zeitguys.app.view {
 			return null;
 		}
 		
+		public function getButtonIndex(button:*):uint {
+			var buttonID:String;
+			
+			if (button is ModalButtonData) {
+				buttonID = ModalButtonData(button).id;
+			} else if (button is String) {
+				buttonID = button;
+			}
+			
+			if (! buttonID) {
+				throw new ArgumentError("Argument must be a valid ModalButtonData object or the button's ID as a String");
+			}
+			
+			return _buttonLookup[buttonID];
+		}
+		
 		public function setBodyText(bodyText):void {
 			if (_bodyText && bodyText){
 				setTextFieldContent(_bodyText, bodyText);
@@ -449,7 +482,6 @@ package com.zeitguys.app.view {
 		public function get pressedButton():String {
 			return _pressedButton;
 		}
-	
 	}
 
 }
