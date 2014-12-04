@@ -1,5 +1,5 @@
 package com.zeitguys.util {
-	import com.zeitguys.app.error.FlashConstructionError;
+	import com.zeitguys.kestrel.app.error.FlashConstructionError;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	
