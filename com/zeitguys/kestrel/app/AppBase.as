@@ -168,7 +168,7 @@ package com.zeitguys.kestrel.app {
 			_deviceSize = getDevicePixelDimensions();
 			trace("Screen Size detected at: " + _deviceSize);
 			
-			trace("Content offset: " + contentOffset);
+			trace("Content Y-offset due to OS status bar and version: " + contentOffset);
 			
 			init();
 			
@@ -317,7 +317,7 @@ package com.zeitguys.kestrel.app {
 					resumeApp();
 				}
 			} else {
-				trace( "FALSE resume app sent - are you Debugging in simulator? Ignoring." );
+				trace( "FALSE 'resume app' APP STATE event sent - ignoring. Are you Debugging in simulator? " );
 			}
 		}
 		
