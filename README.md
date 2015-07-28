@@ -14,4 +14,4 @@ Kestrel provides a solid and robust multi-platform foundation for rapid mobile a
 
 ## Documentation
 
-Currently there's a fair bit of inline docs. Working on an ASDoc and some GitHub/Wiki pages eventually.
+Currently there's a fair bit of inline docs, so please look at the classes (in `src/com/zeitguys/framework`). Working on an ASDoc and some GitHub/Wiki pages eventually.
