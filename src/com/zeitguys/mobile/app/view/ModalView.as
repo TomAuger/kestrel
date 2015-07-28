@@ -1,7 +1,7 @@
-package com.zeitguys.kestrel.app.view {
-	import com.zeitguys.kestrel.app.error.FlashConstructionError;
-	import com.zeitguys.kestrel.app.model.ILocalizable;
-	import com.zeitguys.kestrel.app.model.vo.ModalButtonData;
+package com.zeitguys.mobile.app.view {
+	import com.zeitguys.mobile.app.error.FlashConstructionError;
+	import com.zeitguys.mobile.app.model.ILocalizable;
+	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
 	import com.zeitguys.util.ClipUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;

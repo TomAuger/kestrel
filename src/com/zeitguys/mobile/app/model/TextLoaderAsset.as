@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.model {
+package com.zeitguys.mobile.app.model {
 	import flash.net.URLRequest;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;

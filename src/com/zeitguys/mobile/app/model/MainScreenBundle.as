@@ -1,6 +1,6 @@
-package com.zeitguys.kestrel.app.model {
+package com.zeitguys.mobile.app.model {
 	import flash.display.DisplayObject;
-	import com.zeitguys.kestrel.app.view.ScreenView;
+	import com.zeitguys.mobile.app.view.ScreenView;
 	
 	/**
 	 * The App's Main Screen is the one in the base FLA that is compiled in flash to author/publish the app.

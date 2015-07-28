@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.model {
+package com.zeitguys.mobile.app.model {
 	import com.zeitguys.util.DebugUtils;
 	import flash.errors.IllegalOperationError;
 	import flash.net.SharedObject;

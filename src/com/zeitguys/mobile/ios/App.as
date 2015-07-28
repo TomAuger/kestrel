@@ -1,5 +1,5 @@
-package com.zeitguys.kestrel.ios {
-	import com.zeitguys.kestrel.app.AppBase;
+package com.zeitguys.mobile.ios {
+	import com.zeitguys.mobile.app.AppBase;
 	import flash.geom.Rectangle;
 	import flash.system.Capabilities;
 	

@@ -1,6 +1,6 @@
-package com.zeitguys.kestrel.app.controller {
-	import com.zeitguys.kestrel.app.view.ScreenView;
-	import com.zeitguys.kestrel.app.view.ViewBase;
+package com.zeitguys.mobile.app.controller {
+	import com.zeitguys.mobile.app.view.ScreenView;
+	import com.zeitguys.mobile.app.view.ViewBase;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.EventDispatcher;

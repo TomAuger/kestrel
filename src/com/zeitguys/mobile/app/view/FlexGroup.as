@@ -1,5 +1,5 @@
-package com.zeitguys.kestrel.app.view {
-	import com.zeitguys.kestrel.app.view.asset.ScreenAssetView;
+package com.zeitguys.mobile.app.view {
+	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import flash.display.DisplayObject;
 	import flash.text.TextField;
 	

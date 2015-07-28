@@ -1,6 +1,6 @@
-package com.zeitguys.kestrel.ios.view {
-	import com.zeitguys.kestrel.app.model.vo.ModalButtonData;
-	import com.zeitguys.kestrel.app.view.ModalView;
+package com.zeitguys.mobile.ios.view {
+	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
+	import com.zeitguys.mobile.app.view.ModalView;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	

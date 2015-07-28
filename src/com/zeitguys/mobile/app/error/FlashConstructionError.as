@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.error {
+package com.zeitguys.mobile.app.error {
 	
 	/**
 	 * Use this error if we're expecting a MovieClip to contain certain named instances, but the designer has not provided them.

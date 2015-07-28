@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.model {
+package com.zeitguys.mobile.app.model {
 	import flash.display.Bitmap;
 	import flash.display.Loader;
 	import flash.display.LoaderInfo;

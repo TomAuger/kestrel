@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.ios {
+package com.zeitguys.mobile.ios {
 	import flash.errors.IllegalOperationError;
 	/**
 	 * Defines iOS-specific multi-resolution detection and asset manipulation features.

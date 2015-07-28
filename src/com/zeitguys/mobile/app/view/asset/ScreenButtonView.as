@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.view.asset {
+package com.zeitguys.mobile.app.view.asset {
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	

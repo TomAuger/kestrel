@@ -1,5 +1,5 @@
-package com.zeitguys.kestrel.app.model {
-	import com.zeitguys.kestrel.app.model.event.AssetLoaderEvent;
+package com.zeitguys.mobile.app.model {
+	import com.zeitguys.mobile.app.model.event.AssetLoaderEvent;
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;

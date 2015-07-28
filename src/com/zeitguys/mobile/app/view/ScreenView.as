@@ -1,12 +1,12 @@
-package com.zeitguys.kestrel.app.view {
-	import com.zeitguys.kestrel.app.AppBase;
-	import com.zeitguys.kestrel.app.model.ScreenRouter;
-	import com.zeitguys.kestrel.app.model.ILocalizable;
-	import com.zeitguys.kestrel.app.model.Localizer;
-	import com.zeitguys.kestrel.app.model.ScreenBundle;
-	import com.zeitguys.kestrel.app.view.transition.TransitionBase;
-	import com.zeitguys.kestrel.app.view.ViewBase;
-	import com.zeitguys.kestrel.app.view.asset.ScreenAssetView;
+package com.zeitguys.mobile.app.view {
+	import com.zeitguys.mobile.app.AppBase;
+	import com.zeitguys.mobile.app.model.ScreenRouter;
+	import com.zeitguys.mobile.app.model.ILocalizable;
+	import com.zeitguys.mobile.app.model.Localizer;
+	import com.zeitguys.mobile.app.model.ScreenBundle;
+	import com.zeitguys.mobile.app.view.transition.TransitionBase;
+	import com.zeitguys.mobile.app.view.ViewBase;
+	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;

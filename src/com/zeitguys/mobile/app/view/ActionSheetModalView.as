@@ -1,5 +1,5 @@
-package com.zeitguys.kestrel.app.view {
-	import com.zeitguys.kestrel.ios.view.IOSModalView;
+package com.zeitguys.mobile.app.view {
+	import com.zeitguys.mobile.ios.view.IOSModalView;
 	
 	/**
 	 * ...

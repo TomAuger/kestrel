@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.model.vo {
+package com.zeitguys.mobile.app.model.vo {
 	import flash.display.MovieClip;
 	
 	/**

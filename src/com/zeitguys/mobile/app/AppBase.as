@@ -1,17 +1,17 @@
-package com.zeitguys.kestrel.app {
-	import com.zeitguys.kestrel.app.error.FlashConstructionError;
-	import com.zeitguys.kestrel.app.model.AssetLoader;
-	import com.zeitguys.kestrel.app.view.ActionSheetModalView;
-	import com.zeitguys.kestrel.app.view.ModalFactory;
-	import com.zeitguys.kestrel.app.view.ModalView;
-	import com.zeitguys.kestrel.app.view.transition.TransitionBase;
-	import com.zeitguys.kestrel.app.view.ViewBase;
-	import com.zeitguys.kestrel.app.model.AppConfigModel;
-	import com.zeitguys.kestrel.app.model.ScreenRouter;
-	import com.zeitguys.kestrel.app.model.ILocalizable;
-	import com.zeitguys.kestrel.app.model.IScreenList;
-	import com.zeitguys.kestrel.app.model.Localizer;
-	import com.zeitguys.kestrel.app.view.transition.TransitionManagerBase;
+package com.zeitguys.mobile.app {
+	import com.zeitguys.mobile.app.error.FlashConstructionError;
+	import com.zeitguys.mobile.app.model.AssetLoader;
+	import com.zeitguys.mobile.app.view.ActionSheetModalView;
+	import com.zeitguys.mobile.app.view.ModalFactory;
+	import com.zeitguys.mobile.app.view.ModalView;
+	import com.zeitguys.mobile.app.view.transition.TransitionBase;
+	import com.zeitguys.mobile.app.view.ViewBase;
+	import com.zeitguys.mobile.app.model.AppConfigModel;
+	import com.zeitguys.mobile.app.model.ScreenRouter;
+	import com.zeitguys.mobile.app.model.ILocalizable;
+	import com.zeitguys.mobile.app.model.IScreenList;
+	import com.zeitguys.mobile.app.model.Localizer;
+	import com.zeitguys.mobile.app.view.transition.TransitionManagerBase;
 	import com.zeitguys.util.ClipUtils;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.desktop.NativeApplication;
@@ -23,8 +23,8 @@ package com.zeitguys.kestrel.app {
 	import flash.geom.Rectangle;
 	import flash.text.StyleSheet;
 	import flash.utils.getQualifiedClassName;
-	import com.zeitguys.kestrel.app.model.IScreenList;
-	import com.zeitguys.kestrel.app.view.ScreenView;
+	import com.zeitguys.mobile.app.model.IScreenList;
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.display.MovieClip;
 	import flash.display.Stage;
 	import flash.display.StageAlign;

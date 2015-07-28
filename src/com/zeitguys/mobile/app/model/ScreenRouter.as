@@ -1,6 +1,6 @@
-package com.zeitguys.kestrel.app.model {
-	import com.zeitguys.kestrel.app.AppBase;
-	import com.zeitguys.kestrel.app.view.ScreenView;
+package com.zeitguys.mobile.app.model {
+	import com.zeitguys.mobile.app.AppBase;
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	/**

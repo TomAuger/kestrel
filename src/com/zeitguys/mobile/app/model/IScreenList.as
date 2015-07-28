@@ -1,4 +1,4 @@
-package com.zeitguys.kestrel.app.model {
+package com.zeitguys.mobile.app.model {
 	
 	/**
 	 * ...

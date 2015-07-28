@@ -1,6 +1,6 @@
-package com.zeitguys.kestrel.app.model.event {
-	import com.zeitguys.kestrel.app.model.AssetLoader;
-	import com.zeitguys.kestrel.app.model.LoaderAsset;
+package com.zeitguys.mobile.app.model.event {
+	import com.zeitguys.mobile.app.model.AssetLoader;
+	import com.zeitguys.mobile.app.model.LoaderAsset;
 	import flash.events.Event;
 	
 	/**

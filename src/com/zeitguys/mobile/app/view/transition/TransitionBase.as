@@ -1,5 +1,5 @@
-package com.zeitguys.kestrel.app.view.transition {
-	import com.zeitguys.kestrel.app.view.ScreenView;
+package com.zeitguys.mobile.app.view.transition {
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	

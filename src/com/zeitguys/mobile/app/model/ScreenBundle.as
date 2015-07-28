@@ -1,8 +1,8 @@
-package com.zeitguys.kestrel.app.model {
-	import com.zeitguys.kestrel.app.AppBase;
+package com.zeitguys.mobile.app.model {
+	import com.zeitguys.mobile.app.AppBase;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import com.zeitguys.kestrel.app.view.ScreenView;
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.net.URLRequest;
 	/**
 	 * A ScreenBundle corresponds to an SWF file with a bunch of "Screens" on Frame 1. Each Screen is its own MovieClip with a distinct instance name.

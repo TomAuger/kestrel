@@ -1,9 +1,9 @@
-﻿package com.zeitguys.kestrel.app.view.asset {
-	import com.zeitguys.kestrel.app.error.FlashConstructionError;
-	import com.zeitguys.kestrel.app.model.ILocalizable;
-	import com.zeitguys.kestrel.app.model.Localizer;
-	import com.zeitguys.kestrel.app.view.ViewBase
-	import com.zeitguys.kestrel.app.view.ScreenView;
+﻿package com.zeitguys.mobile.app.view.asset {
+	import com.zeitguys.mobile.app.error.FlashConstructionError;
+	import com.zeitguys.mobile.app.model.ILocalizable;
+	import com.zeitguys.mobile.app.model.Localizer;
+	import com.zeitguys.mobile.app.view.ViewBase
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;

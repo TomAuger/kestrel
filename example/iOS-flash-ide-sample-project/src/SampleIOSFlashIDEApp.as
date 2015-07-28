@@ -1,5 +1,5 @@
 package {
-	import com.zeitguys.kestrel.ios.App;
+	import com.zeitguys.mobile.ios.App;
 	
 	/**
 	 * ...

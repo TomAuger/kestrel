@@ -1,10 +1,10 @@
-package com.zeitguys.kestrel.app.view.transition {
-	import com.zeitguys.kestrel.app.AppBase;
+package com.zeitguys.mobile.app.view.transition {
+	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.desktop.NotificationType;
 	import flash.display.MovieClip;
 	import flash.events.Event;
-	import com.zeitguys.kestrel.app.view.ScreenView;
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.geom.Rectangle;
 	
 	/**

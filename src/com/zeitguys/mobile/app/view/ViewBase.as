@@ -1,7 +1,7 @@
-package com.zeitguys.kestrel.app.view {
-	import com.zeitguys.kestrel.app.AppBase;
-	import com.zeitguys.kestrel.app.model.ILocalizable;
-	import com.zeitguys.kestrel.app.model.Localizer;
+package com.zeitguys.mobile.app.view {
+	import com.zeitguys.mobile.app.AppBase;
+	import com.zeitguys.mobile.app.model.ILocalizable;
+	import com.zeitguys.mobile.app.model.Localizer;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.errors.IllegalOperationError;
@@ -9,7 +9,7 @@ package com.zeitguys.kestrel.app.view {
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.text.TextFieldAutoSize;
-	import com.zeitguys.kestrel.app.model.vo.ModalButtonData;
+	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
 	import flash.text.TextLineMetrics;
 	
 	import com.zeitguys.util.ClipUtils;
