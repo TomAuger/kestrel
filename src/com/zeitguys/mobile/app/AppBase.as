@@ -54,6 +54,7 @@ package com.zeitguys.mobile.app {
 		public static const APP_STATE_SUSPENDING:String = "suspending";
 		public static const APP_STATE_PAUSED:String = "paused";
 		
+		public static const DEVICE_MODEL_SIMULATOR:String = "simulator";
 		
 		protected var _screenList:IScreenList; // Set this within child class constructor
 		protected var _currentScreen:ScreenView;
@@ -76,6 +77,7 @@ package com.zeitguys.mobile.app {
 		
 		private var _deviceSize:Rectangle;
 		private var _osVersion:uint;
+		
 		private var _appState:String;
 		private var _inTransition:Boolean = false;
 		
@@ -168,6 +170,8 @@ package com.zeitguys.mobile.app {
 			_deviceSize = getDevicePixelDimensions();
 			trace("Screen Size detected at: " + _deviceSize);
 			
+			trace("Device model is: " + deviceModel);
+			
 			trace("Content Y-offset due to OS status bar and version: " + contentOffset);
 			
 			init();
@@ -223,6 +227,14 @@ package com.zeitguys.mobile.app {
 				return "Unknown OS";
 			}
 		}
+		
+		/**
+		 * Override in OS-specific classes
+		 * @return String
+		 */
+		 public function get deviceModel():String {
+			 return DEVICE_MODEL_SIMULATOR;
+		 }
 		
 		/**
 		 * @return the adjustment in pixels that the content (or TransitionManager) should be adjusted to accommodate the status bar.
