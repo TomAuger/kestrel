@@ -188,12 +188,10 @@ package com.zeitguys.mobile.app {
 		 */
 		public function getDevicePixelDimensions(orientation:String = ORIENTATION_PORTRAIT, OSAdjustment:Boolean = true):Rectangle {
 			if (stage){
-				var dimensions:Rectangle = new Rectangle(0, 0,
-					Math.min(stage.fullScreenWidth, stage.fullScreenHeight),
-					Math.max(stage.fullScreenWidth, stage.fullScreenHeight)
+				return new Rectangle(0, 0,
+					(ORIENTATION_PORTRAIT == orientation ? Math.min(stage.fullScreenWidth, stage.fullScreenHeight) : Math.max(stage.fullScreenWidth, stage.fullScreenHeight)),
+					(ORIENTATION_PORTRAIT == orientation ? Math.max(stage.fullScreenWidth, stage.fullScreenHeight) : Math.min(stage.fullScreenWidth, stage.fullScreenHeight))
 				);
-				
-				return dimensions;
 			} else {
 				throw new ReferenceError("Can't get dimensions until app has been added to stage. Wait until app initialized before calling this function.");
 			}
