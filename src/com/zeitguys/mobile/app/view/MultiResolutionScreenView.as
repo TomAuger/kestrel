@@ -26,7 +26,15 @@ package com.zeitguys.mobile.app.view
 			super.onClipLoaded();
 		}*/
 		
-		public function getAssetScale(resolution:String = ""):Number {
+		/**
+		 * Returns the scale multiplier that should be used on assets (esp loaded images).
+		 * 
+		 * @TODO Allow recognition of asset resolution to change the value that's returned.
+		 * 
+		 * @param	assetResolution Not currently supported.
+		 * @return
+		 */
+		public function getAssetScale(assetResolution:String = ""):Number {
 			if (isDeviceRetina) {
 				return 1;
 			}
