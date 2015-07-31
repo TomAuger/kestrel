@@ -46,6 +46,8 @@ package com.zeitguys.mobile.app.view.transition {
 		 * Start the previous (outgoing) screen's transition out
 		 */
 		public function transitionOut():void {
+			trace("--------------------------------------\nTransitioning OUT: '" + outgoingScreen.id + "'.");
+			
 			// No transition. Go directly to endTransitionOut().
 			endTransitionOut();
 		}
