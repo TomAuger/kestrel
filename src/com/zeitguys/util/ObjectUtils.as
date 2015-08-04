@@ -55,6 +55,12 @@ package com.zeitguys.util {
 			return false;
 		}
 		
+		/**
+		 * Returns the name of the supplied object's Class, as a String.
+		 * 
+		 * @param	obj
+		 * @return
+		 */
 		public static function getClassName(obj:Object):String {
 			var className:String = getQualifiedClassName(obj);
 			var parts:Array = className.split("::");
@@ -64,6 +70,23 @@ package com.zeitguys.util {
 				return className;
 			}
 		}
+		
+		/**
+		 * Returns the Class of the supplied object, as a Class
+		 * 
+		 * @param	obj
+		 * @return
+		 */
+		public static function getClass(obj:Object):Class {
+			var cls:Class = (obj as Class) || (obj.constructor as Class);
+			
+			if (cls == null) {
+				cls = Class(getDefinitionByName(getQualifiedClassName(obj)));
+			}
+			
+			return cls;
+		}
+		
 		
 		public function ObjectUtils() {
 		
