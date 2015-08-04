@@ -137,13 +137,6 @@
 		}
 		
 		public function get currentLanguage():String {
-			trace();
-			trace();
-			trace();
-			trace( 'current language', localStorage.data['language']);
-			trace();
-			trace();
-			trace();
 			return localStorage.data['language'];
 		}
 		
