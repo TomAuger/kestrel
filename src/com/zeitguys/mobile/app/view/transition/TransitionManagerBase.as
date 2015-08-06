@@ -35,6 +35,8 @@ package com.zeitguys.mobile.app.view.transition {
 			_stageDimensions = stageRect;
 			_app = app;
 			
+			this.name = "KestrelTransitionManager"; // makes debugging / traces nicer.
+			
 			addEventListener(Event.ADDED_TO_STAGE, init);
 		}
 		
