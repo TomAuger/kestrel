@@ -402,7 +402,7 @@ package com.zeitguys.mobile.app.view {
 		 * occur with the screen, possibly long before it is ever displayed.
 		 * 
 		 * 
-		 * @see		#init() for an easier way to add Screen-specific start-up activities (such as setting default values, etc)
+		 * @see		#initStage() for an easier way to add Screen-specific start-up activities (such as setting default values, etc)
 		 * 
 		 * @param	event
 		 */
