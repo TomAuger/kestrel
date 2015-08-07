@@ -59,7 +59,6 @@ package com.zeitguys.mobile.app {
 		protected var _screenList:IScreenList; // Set this within child class constructor
 		protected var _currentScreen:ScreenView;
 		protected var _nextScreen:String;
-		protected var _CurrentTransition:Class = TransitionBase;
 		
 		protected var _screenRouter:ScreenRouter;
 		
@@ -607,20 +606,6 @@ package com.zeitguys.mobile.app {
 			return _transitionManager;
 		}
 		
-		public function get CurrentTransition():Class {
-			return _CurrentTransition;
-		}
-		
-		/**
-		 * The CurrentTransition (Class) is passed to the TransitionManager on `transition()`.
-		 * This tells TransitionManager what Transition to use, so set CurrentTransition
-		 * _before_ you initiate an action that will fire a transition (basically, `setScreen()`).
-		 */
-		public function set CurrentTransition(TransitionClass:Class):void {
-			trace ("<--> Setting App TRANSITION to " + TransitionClass);
-			_CurrentTransition = TransitionClass;
-		}
-		
 		/**
 		 * Triggered by ScreenRouter.EVENT_SCREEN_CHANGED.
 		 * 
@@ -632,7 +617,7 @@ package com.zeitguys.mobile.app {
 			inTransition = true;
 			
 			_transitionManager.addEventListener(TransitionManagerBase.EVENT_TRANSITION_COMPLETE, onTransitionComplete);
-			_transitionManager.transition(_screenRouter.currentScreen, CurrentTransition);
+			_transitionManager.transition(_screenRouter.currentScreen);
 		}
 		
 		private function onTransitionComplete(event:Event):void {
@@ -644,10 +629,6 @@ package com.zeitguys.mobile.app {
 			if (APP_STATE_READY == appState) {
 				
 			}
-			
-			// Reset the current transition back to default
-			trace("<--> RESET transition");
-			CurrentTransition = TransitionBase;
 			
 			screenTransitionComplete(_screenRouter.currentScreen);
 		}

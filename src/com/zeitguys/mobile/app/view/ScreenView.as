@@ -20,15 +20,18 @@ package com.zeitguys.mobile.app.view {
 	 * The following hooks are available for child classes to extend, throughout the lifecycle and startup of the screen:
 	 * * (Constructor): the screen is added to the queue, and usually loading of its assets starts. Generally we don't do anything here; maybe define the screen model.
 	 * 
-	 * * onClipLoaded: the screen is loaded and its clip has been transferred to _clip. Does not have access to Stage yet
-	 * * initStage: the screen has been added to the stage. That doesn't necessarily mean that it is currently visible - just that it is in a SWF that is currently added to the stage.
-	 * * localize: the screen is requesting its locale information. This generally happens after initStage, and is asynchronous, but will always happen before setup. Only do localization activities here.
-	 *
-	 * * setup: the screen has just been switched to and is about to be displayed. This is a good place to initialize the model. If you want the screen to reset __every__ time the screen is displayed, do it here.
-	 * * reset: the ScreenController is requesting a screen reset. This should reset the View and possibly the Model as well. If you want the screen to reset when requested, but not every time (such as Back button functionality), then reset your View and Model here.
-	 * * activate: the screen is now active. This is a good place to add event listeners. Each asset then gets activated in turn. You can decide whether to activate the screen first or the assets.
+	 * * onClipLoaded: the screen is loaded and its clip has been transferred to _clip. Does not have access to Stage yet.
 	 * 
-	 * * deactivate: the screen has been deactivated, either because we're leaving the screen or because we're pausing the app. Remove any event listeners you have added, here.
+	 * * initStage: Called ONCE per screen, when the screen clip has been added to a DisplayList. That doesn't necessarily mean that it is currently visible. However, it DOES mean that the View has access to all its DisplayObjects, so this is generally where you assign Assets
+	 * 
+	 * * setupBeforeLocalize: called EVERY time the screen is switched to. Good place to setup variables, etc that might be needed by localize()
+	 * * localize: the screen is requesting its locale information. This generally happens after initStage, and is asynchronous, but will always happen before setup. Only do localization activities here.
+	 * * setupAfterLocalize: called EVERY time the screen is switched to. Good place to do things with strings that have just been localized.
+	 * 
+	 * * reset: Potentially called EVERY time the screen is switched to, if the ScreenController is requesting a screen reset. This should reset the View and possibly the Model as well. If you want the screen to reset when requested, but not every time (such as Back button functionality), then reset your View and Model here.
+	 *
+	 * * activate: Called potentially many times during the lifecycle of a screen. The screen is now active. This is a good place to add event listeners. Each asset then gets activated in turn. You can decide whether to activate the screen first or the assets.
+	 * * deactivate: the screen has been deactivated, either because we're leaving the screen or because we're pausing the app, or we have a modal up. Remove any event listeners you have added, here.
 	 * 
 	 * @author TomAuger
 	 */
@@ -58,6 +61,7 @@ package com.zeitguys.mobile.app.view {
 		protected var _screenLoaded:Boolean = false;
 		protected var _screenReady:Boolean = false;
 		protected var _screenActivated:Boolean = false; // use status to tell whether a screen has been activated. This is used to determine whether first-run initialization activites should take place
+		
 		protected var _transitionArgs:Object = { };
 		protected var _TransitionOut:Class;
 		
@@ -82,6 +86,12 @@ package com.zeitguys.mobile.app.view {
 			}
 			
 			_id = generate_id();
+			
+			// Set the default transition for leaving this screen to TransitionBase (no transition).
+			// Child classes should override this default if your app has a unique transition.
+			if (! _TransitionOut) {
+				_TransitionOut = TransitionBase;
+			}
 			
 			prepare();
 		}
@@ -242,21 +252,23 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
+		 * Used by the TransitionManager to get the transition used to transition out this screen.
+		 * 
+		 * Make sure you set the transition before any calls to ScreenRouter.setScreen()
+		 */
+		public function get TransitionOut():Class {
+			return _TransitionOut;
+		}
+		
+		/**
 		 * Called by AppBase.screenTransitionComplete().
 		 * 
 		 * Child screens may override this to do things post transition, but prior to activation.
-		 * 
-		 * If _TransitionOut has been defined somewhere earlier in the cycle, it will be set here,
-		 * defining the transition that will be used when this screen is exited.
 		 * 
 		 * If you are running any animations on the screen after the transition, but before activation,
 		 * you may use super.onTransitionComplete as your animation complete callback.
 		 */
 		public function onTransitionComplete():void {
-			if (_TransitionOut) {
-				app.CurrentTransition = _TransitionOut;
-			}
-			
 			// If the app is bricked or suspending, then this will not fire.
 			if (app.isReady){
 				activate();

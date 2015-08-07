@@ -75,11 +75,11 @@ package com.zeitguys.mobile.app.view.transition {
 		 * Once both have been accounted for, the transition is ended and TransitionManagerBase dispatches EVENT_TRANSITION_COMPLETE.
 		 */
 		protected function endTransitionOut():void {
-			transitionManager.endTransitionOut();
+			transitionManager.completeTransitionOut();
 		}
 		
 		protected function endTransitionIn():void {
-			transitionManager.endTransitionIn();
+			transitionManager.completeTransitionIn();
 		}
 		
 		
