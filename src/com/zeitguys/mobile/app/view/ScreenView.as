@@ -64,6 +64,7 @@ package com.zeitguys.mobile.app.view {
 		
 		protected var _transitionArgs:Object = { };
 		protected var _TransitionOut:Class;
+		protected var _DefaultTransition:Class;
 		
 		protected var _flexGroups:Vector.<FlexGroup> = new Vector.<FlexGroup>;
 		
@@ -241,6 +242,20 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
+		 * Sets both the default transitioni and the current TransitionOut.
+		 * 
+		 * The difference between the two is that TransitionOut is reset to the default
+		 * transition whenever onTransitionComplete() runs.
+		 */
+		protected function set DefaultTransition(TransitionClass:Class):void {
+			if (ObjectUtils.inheritsFrom(TransitionClass, TransitionBase)) {
+				_DefaultTransition = _TransitionOut = TransitionClass;
+			} else {
+				throw new ArgumentError(TransitionClass + " must inherit from TransitionBase");
+			}
+		}
+		
+		/**
 		 * Call this before onTransitionComplete() to set the transition when leaving this screen.
 		 */
 		public function set TransitionOut(TransitionClass:Class):void {
@@ -263,12 +278,16 @@ package com.zeitguys.mobile.app.view {
 		/**
 		 * Called by AppBase.screenTransitionComplete().
 		 * 
+		 * Resets the current `TransitionOut` to the `DefaultTransition`, then calls {@link activate()}.
+		 * 
 		 * Child screens may override this to do things post transition, but prior to activation.
 		 * 
 		 * If you are running any animations on the screen after the transition, but before activation,
 		 * you may use super.onTransitionComplete as your animation complete callback.
 		 */
 		public function onTransitionComplete():void {
+			_TransitionOut = _DefaultTransition;
+			
 			// If the app is bricked or suspending, then this will not fire.
 			if (app.isReady){
 				activate();
