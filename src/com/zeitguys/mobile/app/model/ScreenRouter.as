@@ -224,9 +224,6 @@ package com.zeitguys.mobile.app.model {
 		
 		/**
 		 * Constructor.
-		 * 
-		 * @param	app			A reference to the calling app.
-		 * @param	screenList	Optional. If passed a screenList, will immediately invoke {@link #processScreenList} on that list, registering Bundles and Screens
 		 */
 		public function ScreenRouter() {
 		
