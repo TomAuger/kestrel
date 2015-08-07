@@ -563,7 +563,7 @@ package com.zeitguys.mobile.app {
 			_screenList = list;
 			_screenRouter.processScreenList(_screenList);
 			
-			setTransitionManager();
+			initializeTransitionManager();
 		}
 		
 		/**
@@ -581,9 +581,11 @@ package com.zeitguys.mobile.app {
 		}
 		
 		/**
-		 * Override in child apps that need to use a custom TransitionManager
+		 * Defines the transition manager used in this app. Called by `set screenList()`.
+		 * 
+		 * Override in child apps that need to use a custom TransitionManager.
 		 */
-		protected function setTransitionManager():void {
+		protected function initializeTransitionManager():void {
 			transitionManager = new TransitionManagerBase(getDevicePixelDimensions(), this);
 		}
 		
