@@ -1,4 +1,4 @@
-package com.zeitguys.mobile.app.view.transition {
+﻿package com.zeitguys.mobile.app.view.transition {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.desktop.NotificationType;
@@ -105,16 +105,19 @@ package com.zeitguys.mobile.app.view.transition {
 					
 					trace("-------------------------------------------\nStarting TRANSITION", _TransitionModuleClass);
 					if (_transitionOrder == TRANSITION_ORDER_OUT_FIRST) {
+						// Register both transitions before calling transitionModule
+						// Otherwise a default transition (eg: TransitionBase) that triggers
+						// immediately can falsely complete the transition (see checkAllTransitionsComplete).
 						registerTransitionOut();
-						transitionModule.transitionOut();
-						
 						registerTransitionIn();
+						
+						transitionModule.transitionOut();
 						transitionModule.transitionIn();
 					} else {
 						registerTransitionIn();
-						transitionModule.transitionIn();
-						
 						registerTransitionOut();
+						
+						transitionModule.transitionIn();
 						transitionModule.transitionOut();
 					}
 				} else {
