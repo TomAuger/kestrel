@@ -651,16 +651,21 @@ package com.zeitguys.mobile.app {
 		}
 		
 		/**
-		 * Activate the current screen.
+		 * Set the current screen, trigger the screen's onTransitionComplete() handler and activate the current screen.
 		 * 
-		 * Well, stashes the current screen, and calls ScreenView.onTransitionComplete() - which calls ScreenView.activate()
+		 * Calls ScreenView.onTransitionComplete() - which calls ScreenView.activate().
 		 * 
-		 * Child app can hook into this for additional processing once screen transition is done.
+		 * We delegate triggering ScreenView.activate() to the screen, rather than queueing it here, so that if
+		 * the screen runs any animations or needs to wait before activation, it's the Screen's responsibility to 
+		 * trigger ScreenView.activate() when appropriate.
 		 * 
 		 * @param	currentScreen
 		 */
 		protected function screenTransitionComplete(currentScreen:ScreenView):void {
+			// Stash the current screen.
 			_currentScreen = currentScreen;
+			
+			// Trigger ScreenView.onTransitionComplete();
 			_currentScreen.onTransitionComplete();
 		}
 		
