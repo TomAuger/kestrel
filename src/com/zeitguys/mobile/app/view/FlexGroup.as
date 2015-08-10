@@ -67,9 +67,7 @@ package com.zeitguys.mobile.app.view {
 		 * @return
 		 */
 		public function addClip(clip:DisplayObject, parentItem:FlexItem = null, textFieldName:String = ""):FlexItem {
-			var newItem:FlexItem = new FlexItem(clip, parentItem, textFieldName);
-			
-			return addItem(newItem);
+			return addItem(new FlexItem(clip, parentItem, textFieldName));
 		}
 		
 		/**
@@ -77,7 +75,7 @@ package com.zeitguys.mobile.app.view {
 		 * 
 		 * @see FlexItem()
 		 * 
-		 * This is a convenience method, much like {@link /addClip()} in that it returns the newly created FlexItem that can be passed as the
+		 * This is a convenience method, exactly like {@link /addClip()} in that it returns the newly created FlexItem that can be passed as the
 		 * parent of the next FlexItem below it. The only difference is that it expects a `ScreenAssetView` rather than a `DisplayObject`.
 		 * 
 		 * @param	asset
