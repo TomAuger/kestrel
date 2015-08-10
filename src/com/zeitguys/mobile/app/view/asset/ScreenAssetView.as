@@ -83,7 +83,7 @@
 		public function set screen(screen:ScreenView):void {
 			_screen = screen;
 			
-			if (setClip()) {
+			if (findClip()) {
 				if (_textFieldName && _clipName !== _textFieldName) {
 					var clip:DisplayObject = getRequiredChildByName(_textFieldName);
 					if (clip is TextField) {
@@ -125,7 +125,7 @@
 		 * 
 		 * @return
 		 */
-		protected function setClip():Boolean {
+		protected function findClip():Boolean {
 			if (! _clip){
 				_clip = getRequiredChildByName(_clipName, null, DisplayObjectContainer(screen.clip));
 			}
