@@ -27,48 +27,30 @@
 	 * 
 	 * The Asset is attached to the screen using the screen setter method. This is critical, as the asset may actually be instantiated well in advance
 	 * of the Screen's SWF being available. No functionality (such as event listener registration) that depends on a particular MovieClip or Flash element
-	 * within the asset should be invoked until after the SWF has been attached.
+	 * within the asset should be invoked until after the SWF has been attached. The `init()` method is the perfect place to start, as it is called by `set screen()`.
 	 * 
-	 * ScreenViews that use ScreenAssetViews must be sure to add themselves to the asset using set screen. This is handled automatically by the base
+	 * ScreenViews that use ScreenAssetViews must be sure to add themselves to the asset using `ScreenAssetView.set screen()`. This is handled automatically by the base
 	 * ScreenView class within its {@link ScreenView/addAsset()} method.
 	 *  
 	 * Extend this class to create assets with specific characteristics and behaviours such as text boxes, buttons and interactive components.
 	 * 
-	 * Child classes must do the following:
-		 * 
+	 * ScreenAssetViews should **not** be nested within other ScreenAssetViews: they are meant to be first-class citizens of the ScreenView. They can, however contain 
+	 * any other assets that extend ViewBase (such as AssetView).
 	 *
 	 * @see ScreenView.defineAssets()
 	 *
 	 * @author TomAuger
 	 */
-	public class ScreenAssetView extends ViewBase {
+	public class ScreenAssetView extends AssetView {
 		
 		protected var _screen:ScreenView;
-		protected var _numberFormatter:NumberFormatter;
 		
-		protected var _active:Boolean = false;
-		protected var _disabled:Boolean = false;
-		
-		protected var _textFieldName:String;
-		protected var _textField:TextField;
-		
-		public function ScreenAssetView(clip:*, disabled:Boolean = false, localizableTextFieldName:String = "" ) {
-			if (clip is DisplayObject) {
-				_clipName = DisplayObject(clip).name;
-				_clip = clip;
-			} else if (clip is String) {
-				// Store the name. We can't find the actual clip until we have added the Screen
-				_clipName = clip;
-			} else {
-				throw new ArgumentError("Constructor argument 'clip' must be a DisplayObject instance name (String) or an actual DisplayObject instance");
+		public function ScreenAssetView(clip:*, disabled:Boolean = false, localizableTextFieldName:String = "", screenView:ScreenView = null ) {
+			super(clip, disabled, localizableTextFieldName);
+			
+			if (screenView) {
+				screen = screenView;
 			}
-			
-			
-			if (localizableTextFieldName) {
-				_textFieldName = localizableTextFieldName;
-			}
-			
-			_disabled = disabled;
 		}
 		
 		/**
@@ -84,22 +66,6 @@
 			_screen = screen;
 			
 			if (findClip()) {
-				if (_textFieldName && _clipName !== _textFieldName) {
-					var clip:DisplayObject = getRequiredChildByName(_textFieldName);
-					if (clip is TextField) {
-						_textField = TextField(clip);
-					} else {
-						throw new FlashConstructionError(screenName, _textFieldName, "as TextField");
-					}
-				} else {
-					if (_clip is TextField) {
-						_textField = TextField(_clip);
-					}
-				}
-				
-				// Store the clip's original coords.
-				_clipOrigX = _clip.x;
-				_clipOrigY = _clip.y;
 				
 				init();
 				
@@ -127,15 +93,10 @@
 		 */
 		protected function findClip():Boolean {
 			if (! _clip){
-				_clip = getRequiredChildByName(_clipName, null, DisplayObjectContainer(screen.clip));
+				clip = getRequiredChildByName(_clipName, null, DisplayObjectContainer(screen.clip));
 			}
 			
-			if (_clip && _clip is DisplayObject) {
-				return true;
-			} else {
-				throw new FlashConstructionError(_screen.id, _clipName);
-				return false;
-			}
+			return true;
 		}
 		
 		/**

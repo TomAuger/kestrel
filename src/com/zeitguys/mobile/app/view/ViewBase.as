@@ -146,6 +146,10 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
+		public function set clip(clipDisplayObject:DisplayObject):void {
+			_clip = clipDisplayObject;
+		}
+		
 		public function get clip():DisplayObject {
 			if (_clip){
 				return _clip;
@@ -313,12 +317,18 @@ package com.zeitguys.mobile.app.view {
 		protected function getRequiredChildByName(clipName:String, asClass:Class = null, parentClip:DisplayObjectContainer = null):DisplayObject {
 			var clip:DisplayObject;
 			
-			parentClip ||= (_clip as DisplayObjectContainer);
+			if (! parentClip) {
+				if (_clip && _clip is DisplayObjectContainer) {
+					parentClip = DisplayObjectContainer(_clip);
+				} else {
+					throw new IllegalOperationError("Called getRequiredChildByName() with no parentClip, and this View's clip has not yet been defined.");
+				}
+			}
 			
 			if (parentClip && parentClip is DisplayObjectContainer){
 				clip = ClipUtils.getRequiredChildByName(clipName, parentClip, asClass);
 			} else {
-				throw new IllegalOperationError("'" + _clipName + "' is not a DisplayObjectContainer.");
+				throw new IllegalOperationError("'" + parentClip + "' is not a DisplayObjectContainer.");
 			}
 			
 			return clip;
@@ -402,7 +412,7 @@ package com.zeitguys.mobile.app.view {
 		
 		
 		/**
-		 * Attach the ViewBase's _clip to a parent.
+		 * Attach the ViewBase's _clip to a parent container.
 		 * 
 		 * @param	parentClip
 		 * @return
