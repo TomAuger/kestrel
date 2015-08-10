@@ -1,6 +1,7 @@
 package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import flash.display.DisplayObject;
+	import flash.errors.IllegalOperationError;
 	import flash.text.TextField;
 	
 	/**
@@ -87,9 +88,21 @@ package com.zeitguys.mobile.app.view {
 			return addItem(new FlexItem(asset, parentItem, textFieldName));
 		}
 		
+		/**
+		 * Convenience function to avoid having to explicitly reference `_screen`. 
+		 * 
+		 * @see ScreenView.registerAsset()
+		 * 
+		 * Registers the asset with the ScreenView, so the ScreenView can automatically update the asset when, for example, the screen is activated/deactivated.
+		 * 
+		 * @param	asset
+		 * @return
+		 */
 		public function registerAssetWithScreen(asset:ScreenAssetView):ScreenAssetView {
 			if (_screen) {
 				_screen.registerAsset(asset);
+			} else {
+				throw new IllegalOperationError("Attempting to register asset with its Screen, but this FlexGroup is not attached to a Screen. (Are you attempting to nest a ScreenAssetView inside another ScreenAssetView?)");
 			}
 			
 			return asset;
