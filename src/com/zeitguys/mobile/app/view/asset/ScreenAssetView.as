@@ -65,7 +65,7 @@
 		public function set screen(screen:ScreenView):void {
 			_screen = screen;
 			
-			if (findClip()) {
+			if (findClip(DisplayObjectContainer(screen.clip))) {
 				
 				init();
 				
@@ -84,19 +84,6 @@
 			}
 			
 			return null;
-		}
-		
-		/**
-		 * Associate the appropriate DisplayObject with this asset, based on the clipName that was passed in the constructor.
-		 * 
-		 * @return
-		 */
-		protected function findClip():Boolean {
-			if (! _clip){
-				clip = getRequiredChildByName(_clipName, null, DisplayObjectContainer(screen.clip));
-			}
-			
-			return true;
 		}
 		
 		/**

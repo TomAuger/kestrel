@@ -42,6 +42,21 @@ package com.zeitguys.mobile.app.view.asset
 		}
 		
 		
+		
+		/**
+		 * Associate the appropriate DisplayObject with this asset, based on the clipName that was passed in the constructor.
+		 * 
+		 * @return
+		 */
+		protected function findClip(parent:DisplayObjectContainer):Boolean {
+			if (! _clip){
+				clip = getRequiredChildByName(_clipName, null, parent);
+			}
+			
+			return true;
+		}
+		
+		
 		override public function set clip(clipDisplayObject:DisplayObject):void {
 			super.clip = clipDisplayObject;
 			
