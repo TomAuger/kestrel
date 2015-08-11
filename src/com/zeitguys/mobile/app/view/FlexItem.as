@@ -8,6 +8,7 @@ package com.zeitguys.mobile.app.view {
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
 	import flash.display.Sprite;
+	import flash.errors.IllegalOperationError;
 	import flash.text.StyleSheet;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
@@ -50,39 +51,21 @@ package com.zeitguys.mobile.app.view {
 		public function FlexItem(item:*, parentItem:FlexItem = null, textField:String = "" ) {
 			if (item is AssetView) {
 				_asset = AssetView(item);
-				_clip = _asset.clip;
+				if (_asset.hasClip){
+					clip = _asset.clip;
+				}
 			} else if (item is DisplayObject) {
-				_clip = DisplayObject(item);
+				clip = DisplayObject(item);
 				_asset = null;
 			} else {
 				throw new ArgumentError("Attempting to instantiate FlexItem with a non-DisplayObject and non-ScreenAssetView : " + item.toString());
 			}
 			
-			_clipName = _clip.name;
-			
 			_parent = parentItem;
 			
 			if (textField) {
-				_textField = getRequiredTextFieldByName(textField);
 				_textFieldName = textField;
-			} else {
-				if (_clip is TextField) {
-					_textField = TextField(_clip);
-					_textFieldName = _clip.name;
-				}
 			}
-			
-			_initY = _clip.y;
-			_initX = _clip.x;
-			
-			// Do this before we measure any heights, because height will change!
-			adjustTextFieldHeight();
-			
-			if (_parent) {
-				_parentBottomOffsetY = _initY - _parent.bottomY;
-			}
-			
-			//trace("%% FlexItem CREATED: " + _clip.name + " initY: " + _initY);
 		}
 		
 		public function setGroup(group:FlexGroup):FlexItem {
@@ -109,8 +92,8 @@ package com.zeitguys.mobile.app.view {
 		 * @param	textField
 		 * @return
 		 */
-		public function chainAsset(asset:ScreenAssetView, textField:String = ""):FlexItem {
-			return _flexGroup.addAsset(_flexGroup.registerAssetWithScreen(asset), this, textField);
+		public function chainAsset(asset:AssetView, textField:String = ""):FlexItem {
+			return _flexGroup.addAsset(asset, this, textField);
 		}
 	
 		/**
@@ -218,21 +201,53 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
-		 * Convenience getter function. If we know the asset is a MovieClip,
-		 * this saves one cast. If there's an asset, but it's not a MovieClip, we'll get nothing, so check carefully.
+		 * Set the FlexItem's AssetView clip. If we defined a text field when we created the FlexItem,
+		 * then we'll go looking for that now, or if the Clip itself is a TextField, then we'll add
+		 * that as the FlexItem's textfield for localization purposes.
+		 * 
+		 * We also set up initial X and Y coordinates, and set up the parent offsets.
 		 */
-		public function get clip():DisplayObject {
-			if (_clip is MovieClip) {
-				return MovieClip(_clip);	
+		public function set clip(clipDisplayObject:DisplayObject):void {
+			_clip = clipDisplayObject;
+			
+			_clipName = _clip.name;
+			
+			if (_textFieldName) {
+				_textField = getRequiredTextFieldByName(_textFieldName);
+			} else {
+				if (_clip is TextField) {
+					_textField = TextField(_clip);
+					_textFieldName = _clip.name;
+				}
 			}
 			
-			return null;
+			// Do this before we measure any heights, because height will change!
+			adjustTextFieldHeight();
+			
+			_initY = _clip.y;
+			_initX = _clip.x;
+			
+			if (_parent) {
+				// I wonder whether this is potentially "too late" in some cases?
+				_parentBottomOffsetY = _initY - _parent.bottomY;
+			}
 		}
 		
 		/**
-		 * I hate this - it should be get clip() but that would mean so much refactoring it's not even funny.
+		 * Access the FlexItem's AssetView clip. If we haven't done so yet (because the clip wasn't defined yet when we added
+		 * the new Asset to the FlexItem), we have the chance to go and get it now.
+		 * 
+		 * @uses FlexItem.set clip() so if this is the first time we have access to the clip, we set up all the other stuff we need to do.
 		 */
-		public function get displayObject():DisplayObject {
+		public function get clip():DisplayObject {
+			if (! _clip) {
+				if (_asset && _asset.hasClip) {
+					clip = _asset.clip;
+				} else {
+					throw new IllegalOperationError("Trying to access FlexItem's asset clip, but it has not yet been defined.");
+				}
+			}
+			
 			return _clip;
 		}
 		

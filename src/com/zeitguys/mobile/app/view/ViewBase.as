@@ -2,6 +2,7 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.Localizer;
+	import com.zeitguys.mobile.app.view.asset.AssetView;
 	import com.zeitguys.util.TextUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -32,8 +33,6 @@ package com.zeitguys.mobile.app.view {
 		protected var _clipOrigX:Number;
 		protected var _clipOrigY:Number;
 		
-		protected var _parent:DisplayObjectContainer;
-		
 		protected static var __app:AppBase;
 		
 		
@@ -54,6 +53,22 @@ package com.zeitguys.mobile.app.view {
 			} else {
 				throw new IllegalOperationError("'" + _clipName + "' has not yet been defined! Why are you asking for it now?");
 			}
+		}
+		
+		public function get hasClip():Boolean {
+			if (_clip) {
+				return true;
+			}
+			
+			return false;
+		}
+		
+		public function get parentClip():DisplayObjectContainer {
+			if (_clip) {
+				return _clip.parent;
+			}
+			
+			return null;
 		}
 	
 		public function get id():String {

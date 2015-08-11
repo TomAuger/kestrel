@@ -28,6 +28,7 @@ package com.zeitguys.mobile.app.view {
 		
 		public static const ALIGNMENT_CENTERED:String = 'alignment-centered';
 		
+		protected var _parent:DisplayObjectContainer;
 		protected var _bodyText:TextField;
 		protected var _bg:MovieClip;
 		

@@ -2,9 +2,11 @@ package com.zeitguys.mobile.app.view.asset
 {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.model.Localizer;
+	import com.zeitguys.mobile.app.view.ScreenView;
 	import com.zeitguys.mobile.app.view.ViewBase;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.errors.IllegalOperationError;
 	import flash.globalization.NumberFormatter;
 	import flash.text.TextField;
 	
@@ -14,6 +16,9 @@ package com.zeitguys.mobile.app.view.asset
 	 * @author Tom Auger
 	 */
 	public class AssetView extends ViewBase {
+		protected var _parentAsset:AssetView;
+		protected var _parentScreen:ScreenView;
+		protected var _childAssets:Vector.<AssetView> = new Vector.<AssetView>;
 		
 		protected var _numberFormatter:NumberFormatter;
 		
@@ -23,13 +28,12 @@ package com.zeitguys.mobile.app.view.asset
 		protected var _textFieldName:String;
 		protected var _textField:TextField;
 		
-		public function AssetView(clip:*, disabled:Boolean = false, localizableTextFieldName:String = "") {
-			if (clip is DisplayObject) {
-				_clipName = DisplayObject(clip).name;
-				_clip = clip;
-			} else if (clip is String) {
-				// Store the name. We can't find the actual clip until we have added the Screen
-				_clipName = clip;
+		public function AssetView(assetClip:*, disabled:Boolean = false, localizableTextFieldName:String = "") {
+			if (assetClip is DisplayObject) {
+				_clipName = DisplayObject(assetClip).name;
+				clip = assetClip;
+			} else if (assetClip is String) {
+				_clipName = assetClip;
 			} else {
 				throw new ArgumentError("Constructor argument 'clip' must be a DisplayObject instance name (String) or an actual DisplayObject instance");
 			}
@@ -182,21 +186,33 @@ package com.zeitguys.mobile.app.view.asset
 		
 		
 		
+		public function addAsset(newAsset:AssetView):AssetView {
+			newAsset.parentAsset = this;
+			_childAssets.push(newAsset);
+			
+			return newAsset;
+		}
+		
 		
 		/**
 		 * Associate the appropriate DisplayObject with this asset, based on the clipName that was passed in the constructor.
 		 * 
 		 * @return
 		 */
-		protected function findClip(parent:DisplayObjectContainer):Boolean {
+		protected function findClip(parentClip:DisplayObjectContainer):Boolean {
 			if (! _clip){
-				clip = getRequiredChildByName(_clipName, null, parent);
+				clip = getRequiredChildByName(_clipName, null, parentClip);
 			}
 			
 			return true;
 		}
 		
-		
+		/**
+		 * Sets the DisplayObject that this Asset is associated with. This is generally
+		 * a Sprite or MovieClip that contains the artwork for this Asset, and may
+		 * even contain other nested DisplayObjectContainers destined to become
+		 * child AssetViews of this Asset.
+		 */
 		override public function set clip(clipDisplayObject:DisplayObject):void {
 			super.clip = clipDisplayObject;
 			
@@ -211,6 +227,55 @@ package com.zeitguys.mobile.app.view.asset
 			// Store the clip's original coords.
 			_clipOrigX = _clip.x;
 			_clipOrigY = _clip.y;
+		}
+		
+		/**
+		 * Sets the parent AssetView, and if the clip has been deferred (such as when the AssetView is instantiated
+		 * with just the instance name of the clip, instead of the actual clip), then will attempt to set the clip
+		 * by searching through the parentAsset's clip's display hierarchy.
+		 */
+		public function set parentAsset(asset:AssetView):void {
+			_parentAsset = asset;
+			
+			if (! _clip) {
+				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
+					clip = _parentAsset.getRequiredChildByName(_clipName);
+				} else {
+					throw new IllegalOperationError("Setting parentAsset, but the parentAsset's clip has not yet been set.");
+				}
+			}
+		}
+		
+		public function get parentAsset():AssetView {
+			return _parentAsset;
+		}
+		
+		public function get screen():ScreenView {
+			if (! _parentScreen) {
+				_parentScreen = getParentScreen(this);
+			}
+			
+			return _parentScreen;
+		}
+		
+		protected function getParentScreen(child:AssetView = null):ScreenView {
+			var parentAsset:AssetView
+			
+			if (! child) {
+				child = this;
+			}
+			
+			parentAsset = child.parentAsset;
+			
+			if (parentAsset) {
+				if (parentAsset is ScreenView) {
+					return ScreenView(parentAsset);
+				} else {
+					return getParentScreen(parentAsset);
+				}
+			}
+			
+			return null; // Nothing found
 		}
 		
 	}

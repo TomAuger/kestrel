@@ -78,7 +78,7 @@
 			}
 		}
 		
-		public function get screen():ScreenView {
+		override public function get screen():ScreenView {
 			if (_screen) {
 				return _screen;
 			}

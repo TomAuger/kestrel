@@ -1,4 +1,5 @@
 package com.zeitguys.mobile.app.view {
+	import com.zeitguys.mobile.app.view.asset.AssetView;
 	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import flash.display.DisplayObject;
 	import flash.errors.IllegalOperationError;
@@ -24,6 +25,7 @@ package com.zeitguys.mobile.app.view {
 		protected var _flexItems:Vector.<FlexItem> = new Vector.<FlexItem>;
 		protected var _backgroundItem:DisplayObject;
 		protected var _screen:ScreenView;
+		protected var _parentView:ViewBase;
 		
 		protected var _flexDirection:String = DIRECTION_DOWN;
 		
@@ -33,9 +35,11 @@ package com.zeitguys.mobile.app.view {
 		protected var _backgroundInitY:int;
 		protected var _backgroundBottomOffsetY:int;
 		
-		public function FlexGroup(screen:ScreenView = null) {
-			if (screen) {
-				_screen = screen;
+		public function FlexGroup(parentView:ViewBase = null) {
+			_parentView = parentView;
+			
+			if (_parentView && _parentView is ScreenView) {
+				_screen = ScreenView(_parentView);
 			}
 		}
 		
@@ -72,19 +76,25 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
-		 * Adds a new FlexItem to the FlexGroup by providing its source ScreenAssetView.
+		 * Adds a new FlexItem to the FlexGroup by providing its source AssetView. Also takes care of registering the asset
+		 * with the ScreenView or with the parent Asset, depending on whether the asset is a ScreenAssetView or just an AssetView.
 		 * 
 		 * @see FlexItem()
-		 * 
-		 * This is a convenience method, exactly like {@link /addClip()} in that it returns the newly created FlexItem that can be passed as the
-		 * parent of the next FlexItem below it. The only difference is that it expects a `ScreenAssetView` rather than a `DisplayObject`.
 		 * 
 		 * @param	asset
 		 * @param	parentItem
 		 * @param	textFieldName
 		 * @return
 		 */
-		public function addAsset(asset:ScreenAssetView, parentItem:FlexItem = null, textFieldName:String = ""):FlexItem {
+		public function addAsset(asset:AssetView, parentItem:FlexItem = null, textFieldName:String = ""):FlexItem {
+			if (asset is ScreenAssetView) {
+				registerAssetWithScreen(ScreenAssetView(asset));
+			} else {
+				if (parentView is AssetView){
+					AssetView(parentView).addAsset(asset);
+				}
+			}
+			
 			return addItem(new FlexItem(asset, parentItem, textFieldName));
 		}
 		
@@ -197,6 +207,10 @@ package com.zeitguys.mobile.app.view {
 		
 		public function get screen():ScreenView {
 			return _screen;
+		}
+		
+		public function get parentView():ViewBase {
+			return _parentView;
 		}
 	}
 
