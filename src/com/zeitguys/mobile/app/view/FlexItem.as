@@ -1,6 +1,9 @@
 package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
+	import com.zeitguys.mobile.app.view.asset.AssetView;
 	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
+	import com.zeitguys.util.ClipUtils;
+	import com.zeitguys.util.TextUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
@@ -21,8 +24,10 @@ package com.zeitguys.mobile.app.view {
 	 * 
 	 * @author TomAuger
 	 */
-	public class FlexItem extends ViewBase {
-		protected var _asset:ScreenAssetView;
+	public class FlexItem {
+		protected var _clip:DisplayObject;
+		protected var _clipName:String;
+		protected var _asset:AssetView;
 		protected var _flexGroup:FlexGroup;
 		protected var _parent:FlexItem;
 		protected var _children:Vector.<FlexItem> = new Vector.<FlexItem>;
@@ -43,8 +48,8 @@ package com.zeitguys.mobile.app.view {
 		 * @param	textField Optional. If the item is a TextField, this argument should be omitted. If the item is a container, and you want to be able to localize the (single) textField inside that container, provide the instance name of that TextField.
 		 */
 		public function FlexItem(item:*, parentItem:FlexItem = null, textField:String = "" ) {
-			if (item is ScreenAssetView) {
-				_asset = ScreenAssetView(item);
+			if (item is AssetView) {
+				_asset = AssetView(item);
 				_clip = _asset.clip;
 			} else if (item is DisplayObject) {
 				_clip = DisplayObject(item);
@@ -120,11 +125,14 @@ package com.zeitguys.mobile.app.view {
 		 * 
 		 * If the asset is a TextField, then it will set the text in that TextField, otherwise, it will expect you to provide a textField within the FlexItem constructor.
 		 * 
-		 * @param	newText
-		 * @param 	forceBlank If `newText` is empty, setting this to true will force the TextField to update with the empty string, otherwise the TextField is left alone.
+		 * @param	newText The String we want to appear in the TextField
 		 */
-		public function setItemText(newText:String = "", forceBlank:Boolean = false):void {
-			setText(_textField, newText);
+		public function setItemText(newText:String = ""):void {
+			if (asset) {
+				asset.setText(_textField, newText);
+			} else {
+				TextUtils.setTextFieldContent(_textField, newText);
+			}
 		}
 		
 		/**
@@ -213,7 +221,7 @@ package com.zeitguys.mobile.app.view {
 		 * Convenience getter function. If we know the asset is a MovieClip,
 		 * this saves one cast. If there's an asset, but it's not a MovieClip, we'll get nothing, so check carefully.
 		 */
-		override public function get clip():DisplayObject {
+		public function get clip():DisplayObject {
 			if (_clip is MovieClip) {
 				return MovieClip(_clip);	
 			}
@@ -228,8 +236,12 @@ package com.zeitguys.mobile.app.view {
 			return _clip;
 		}
 		
-		public function get asset():ScreenAssetView {
+		public function get asset():AssetView {
 			return _asset;
+		}
+		
+		public function get screenAsset():ScreenAssetView {
+			return _asset as ScreenAssetView;
 		}
 		
 		/**
@@ -258,6 +270,24 @@ package com.zeitguys.mobile.app.view {
 			} else {
 				throw new FlashConstructionError(_clip.name, clipName, "asset is not a DisplayObjectContainer!");
 			}
+		}
+		
+		/**
+		 * @see ClipUtils.getDescendantByName()
+		 * 
+		 * @param	childName
+		 * @param	parentClip
+		 * @return
+		 */
+		protected function getDescendantByName(childName:String, parentClip:DisplayObjectContainer = null):DisplayObject {
+			if (parentClip == null) {
+				if (_clip is DisplayObjectContainer){
+					parentClip = DisplayObjectContainer(_clip);
+				} else {
+					throw new ArgumentError("Argument 'parentClip' not supplied and this FlexItems's _clip is not a DisplayObjectContainer.");
+				}
+			}
+			return ClipUtils.getDescendantByName(childName, parentClip);
 		}
 	}
 
