@@ -10,7 +10,6 @@ package com.zeitguys.mobile.app.view {
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 	import flash.text.TextFieldAutoSize;
-	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
 	import flash.text.TextLineMetrics;
 	
 	import com.zeitguys.util.ClipUtils;
@@ -27,8 +26,6 @@ package com.zeitguys.mobile.app.view {
 		 * Holds all the Text Variables (%%VARIABLE_NAME%%) that might be defined in a localization file or in a model.
 		 */
 		public var textVariables:Object = { };
-		
-		protected var _viewModals:Object = { };
 		
 		protected var _clip:DisplayObject;
 		protected var _clipName:String;
@@ -124,8 +121,6 @@ package com.zeitguys.mobile.app.view {
 		 */
 		public function localize(localizer:Localizer):void {
 			trace("LOCALIZING: " + _clipName);
-			
-			localizeModals(localizer);
 		}
 		
 		/**
@@ -311,65 +306,6 @@ package com.zeitguys.mobile.app.view {
 			}
 			return ClipUtils.getDescendantByName(childName, parentClip);
 		}
-	
-		
-		
-		// MODALS =========================================================
-		
-		protected function addModal(id:String, bodyText:String = "", ... modalArgs):ModalView {
-			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
-			
-			_viewModals[id] = modal;
-			
-			return modal;
-		}
-		
-		protected function localizeModals(localizer:Localizer):void {
-			var modalID:String,
-				item:Object,
-				modal:ModalView,
-				button:ModalButtonData;
-				
-			for (modalID in _viewModals) {
-				item = _viewModals[modalID];
-				if (item is ModalView) {
-					modal = ModalView(item);
-					
-					// Got the modal. Localize it.
-					modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
-					
-					for each (button in modal.buttons) {
-						button.label = localizer.getModalComponentText(modalID, button.id);
-					}
-				} else {
-					throw new Error("Error with Screen Modals structure.");
-				}
-			}
-		}
-		
-		protected function getModal(id:String):ModalView {
-			if (_viewModals.hasOwnProperty(id)) {
-				return ModalView(_viewModals[id]);
-			} else {
-				throw new RangeError("Modal with ID '" + id + "' has not been defined!");
-			}
-		}
-		
-		protected function setModal(id:String):ModalView {
-			var modal:ModalView = getModal(id);
-			
-			app.currentModal = modal;
-			
-			return modal;
-		}
-		
-		protected function getModalComponentText(localizer:Localizer, alertID:String, component:String):String {
-			return localizer.getModalComponentText(alertID, component);
-		}
-		
-		
-		
-		
 		
 		/**
 		 * Attach the ViewBase's _clip to a parent container.

@@ -4,6 +4,7 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.Localizer;
 	import com.zeitguys.mobile.app.model.ScreenBundle;
+	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
 	import com.zeitguys.mobile.app.view.transition.TransitionBase;
 	import com.zeitguys.mobile.app.view.ViewBase;
 	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
@@ -67,6 +68,7 @@ package com.zeitguys.mobile.app.view {
 		protected var _DefaultTransition:Class;
 		
 		protected var _flexGroups:Vector.<FlexGroup> = new Vector.<FlexGroup>;
+		protected var _screenModals:Object = { };
 		
 		protected var _status:String = STATUS_NOT_READY;
 		
@@ -637,6 +639,68 @@ package com.zeitguys.mobile.app.view {
 		public function get name():String {
 			return _clipName;
 		}
+		
+		
+		
+		
+		
+		/* ===========================================================================================================
+		 *                                                   MODALS
+		/* ===========================================================================================================*/
+		
+		protected function addModal(id:String, bodyText:String = "", ... modalArgs):ModalView {
+			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
+			
+			_screenModals[id] = modal;
+			
+			return modal;
+		}
+		
+		protected function localizeModals(localizer:Localizer):void {
+			var modalID:String,
+				item:Object,
+				modal:ModalView,
+				button:ModalButtonData;
+				
+			for (modalID in _screenModals) {
+				item = _screenModals[modalID];
+				if (item is ModalView) {
+					modal = ModalView(item);
+					
+					// Got the modal. Localize it.
+					modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
+					
+					for each (button in modal.buttons) {
+						button.label = localizer.getModalComponentText(modalID, button.id);
+					}
+				} else {
+					throw new Error("Error with Screen Modals structure.");
+				}
+			}
+		}
+		
+		protected function getModal(id:String):ModalView {
+			if (_screenModals.hasOwnProperty(id)) {
+				return ModalView(_screenModals[id]);
+			} else {
+				throw new RangeError("Modal with ID '" + id + "' has not been defined!");
+			}
+		}
+		
+		protected function setModal(id:String):ModalView {
+			var modal:ModalView = getModal(id);
+			
+			app.currentModal = modal;
+			
+			return modal;
+		}
+		
+		protected function getModalComponentText(localizer:Localizer, alertID:String, component:String):String {
+			return localizer.getModalComponentText(alertID, component);
+		}
+		
+		
+		
 	}
 
 }
