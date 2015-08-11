@@ -3,6 +3,7 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
 	import com.zeitguys.util.ClipUtils;
+	import com.zeitguys.util.TextUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.MovieClip;
@@ -27,7 +28,6 @@ package com.zeitguys.mobile.app.view {
 		
 		public static const ALIGNMENT_CENTERED:String = 'alignment-centered';
 		
-		protected var _parent:DisplayObjectContainer;
 		protected var _bodyText:TextField;
 		protected var _bg:MovieClip;
 		
@@ -239,7 +239,7 @@ package com.zeitguys.mobile.app.view {
 	
 			for each (buttonData in _buttons) {
 				labelTextField = TextField(getRequiredChildByName("label", TextField, buttonData.clip));
-				setTextFieldContent(labelTextField, buttonData.label);
+				TextUtils.setTextFieldContent(labelTextField, buttonData.label);
 			}
 		}
 		
@@ -470,7 +470,7 @@ package com.zeitguys.mobile.app.view {
 		
 		public function setBodyText(bodyText):void {
 			if (_bodyText && bodyText){
-				setTextFieldContent(_bodyText, bodyText);
+				TextUtils.setTextFieldContent(_bodyText, bodyText);
 			}
 		}
 		

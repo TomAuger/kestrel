@@ -2,6 +2,7 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.Localizer;
+	import com.zeitguys.util.TextUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.errors.IllegalOperationError;
@@ -34,6 +35,8 @@ package com.zeitguys.mobile.app.view {
 		protected var _clipOrigX:Number;
 		protected var _clipOrigY:Number;
 		
+		protected var _parent:DisplayObjectContainer;
+		
 		protected static var __app:AppBase;
 		
 		
@@ -44,10 +47,20 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
-		public function localize(localizer:Localizer):void {
-			trace("LOCALIZING: " + _clipName);
-			
-			localizeModals(localizer);
+		public function set clip(clipDisplayObject:DisplayObject):void {
+			_clip = clipDisplayObject;
+		}
+		
+		public function get clip():DisplayObject {
+			if (_clip){
+				return _clip;
+			} else {
+				throw new IllegalOperationError("'" + _clipName + "' has not yet been defined! Why are you asking for it now?");
+			}
+		}
+	
+		public function get id():String {
+			return _clipName;
 		}
 		
 		public static function setApp(app:AppBase):void {
@@ -98,6 +111,23 @@ package com.zeitguys.mobile.app.view {
 			return _clipOrigY;
 		}
 		
+		
+		/* ===========================================================================================================
+		 *                                                 LOCALIZATION
+		/* ===========================================================================================================*/
+		
+		/**
+		 * Override in child classes. This is the only time the View gets a reference to the Localizer,
+		 * so this is where you localize all of the text within the View.
+		 * 
+		 * @param	localizer
+		 */
+		public function localize(localizer:Localizer):void {
+			trace("LOCALIZING: " + _clipName);
+			
+			localizeModals(localizer);
+		}
+		
 		/**
 		 * Set the text of a textField within the asset, or of the asset itself (if the asset is a TextField instance).
 		 * 
@@ -140,21 +170,9 @@ package com.zeitguys.mobile.app.view {
 					textOrHTML = convertEntities(textOrHTML);	
 				}
 				
-				setTextFieldContent(field, parseVariables(textOrHTML, variables), isHTML, autoSize);
+				TextUtils.setTextFieldContent(field, parseVariables(textOrHTML, variables), isHTML, autoSize);
 			} else {
 				trace("ViewBase.setText() WARNING: Could not find appropriate TextField (" + textField.name + ") in " + _clipName + ".");
-			}
-		}
-		
-		public function set clip(clipDisplayObject:DisplayObject):void {
-			_clip = clipDisplayObject;
-		}
-		
-		public function get clip():DisplayObject {
-			if (_clip){
-				return _clip;
-			} else {
-				throw new IllegalOperationError("'" + _clipName + "' has not yet been defined! Why are you asking for it now?");
 			}
 		}
 		
@@ -162,73 +180,6 @@ package com.zeitguys.mobile.app.view {
 			return _clipName;
 		}
 		
-		
-		/**
-		 * Sets the TextField's .text or .htmlText property. Includes the additional logic for preserving the TextFormat / setting the stylesheet.
-		 * 
-		 * Maybe override in child classes if you need to change the way autosize / stylesheets / textFormats are handled
-		 * on a case-by-case basis.
-		 * 
-		 * @param	field
-		 * @param	content
-		 * @param	isHTML
-		 */
-		protected function setTextFieldContent(field:TextField, content:String, isHTML:Boolean = false, autoSize:Boolean = true):void {
-			var htmlCheck:Boolean = false, 
-				tf:TextFormat,
-				metrics:TextLineMetrics,
-				visibleLines:uint;
-			
-			try {
-				var xml:XML = new XML(content);
-				// It will pass if it's only text, so we need to make sure there are children.
-				if ( xml.children().length()) htmlCheck = true;
-			} catch (err:Error) {
-				// Malformed means it's HTML
-				htmlCheck = true;
-			}
-
-			// A lot of issues can be created by things like leading. This is a workaround.
-			field.autoSize = TextFieldAutoSize.LEFT;
-			
-			if (isHTML || htmlCheck) {
-				// Remove excess white space
-				field.condenseWhite = true;
-				
-				// Get the stylesheet from App
-				field.styleSheet = app.styleSheet;
-				
-				field.htmlText = content;
-				
-				// Calculate visible lines for HTML text. Very weird, but this is what works in my testing.
-				visibleLines = field.numLines - Math.min(field.bottomScrollV, field.maxScrollV);
-			} else {
-				// Stash the TextFormat
-				tf = field.getTextFormat();
-				field.styleSheet = null;
-				field.defaultTextFormat = tf;
-				
-				// Allow white space and newlines.
-				field.condenseWhite = false;
-				
-				field.text = content;
-				field.setTextFormat(tf);
-				
-				// Calculate visible lines for plain text. Simple.
-				visibleLines = field.numLines;
-			}
-			
-			if (autoSize) {
-				if (visibleLines < 2) {
-					metrics = field.getLineMetrics(0);
-					
-					field.autoSize = TextFieldAutoSize.NONE;
-					
-					// Adjust the single line size to compensate for leading + obligatory 2px padding.
-					field.height = field.textHeight - metrics.leading + 4;
-				}
-			}
-		}
 		
 		/**
 		 * Looks through the supplied string for occurrences of %%VARIABLE_NAME%% and replaces them with the values of
@@ -306,6 +257,15 @@ package com.zeitguys.mobile.app.view {
 			return text;
 		}
 		
+		
+		
+		
+		
+		
+		/* ===========================================================================================================
+		 *                                             DISPLAYLIST UTILITIES
+		/* ===========================================================================================================*/
+		
 		/**
 		 * Dig through the display hierarchy of the clip to find a child DisplayObject with the requested instance name.
 		 * 
@@ -335,7 +295,7 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
-		 * @see AppBase.getDescendantByName()
+		 * @see ClipUtils.getDescendantByName()
 		 * 
 		 * @param	childName
 		 * @param	parentClip
@@ -346,7 +306,7 @@ package com.zeitguys.mobile.app.view {
 				if (_clip is DisplayObjectContainer){
 					parentClip = DisplayObjectContainer(_clip);
 				} else {
-					throw new ArgumentError("Argument 'parentClip' not supplied and this Screen Asset is not a DisplayObjectContainer.");
+					throw new ArgumentError("Argument 'parentClip' not supplied and this View is not a DisplayObjectContainer.");
 				}
 			}
 			return ClipUtils.getDescendantByName(childName, parentClip);
@@ -434,6 +394,22 @@ package com.zeitguys.mobile.app.view {
 			if (_clip.parent) {
 				_clip.parent.removeChild(_clip);
 			}
+		}
+		
+		
+		
+		
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Allows us to add a filter. Extend this in subclasses, remembering to call parent.addFilter() at the end of the overridden method.
+		 * 
+		 * @param	filterName
+		 * @param	filterCallback
+		 */
+		public function addFilter(filterName:String, filterCallback:Function):void {
+			
 		}
 
 		
