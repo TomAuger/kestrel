@@ -1,5 +1,6 @@
 ﻿package com.zeitguys.mobile.app.model {
 	import com.zeitguys.util.DebugUtils;
+	import com.zeitguys.util.TextUtils;
 	import flash.errors.IllegalOperationError;
 	import flash.errors.IOError;
 	import flash.events.Event;
@@ -102,8 +103,20 @@
 			_assetLoader.addItem(cssLoader);
 		}
 		
-		private function onStylesLoaded(stylesheet:StyleSheet):void {
-			_stylesheet = stylesheet;
+		/**
+		 * Sets the stylesheet using the Setter, so we also register it with TextUtils
+		 * @param	loadedStylesheet
+		 */
+		private function onStylesLoaded(loadedStylesheet:StyleSheet):void {
+			styleSheet = loadedStylesheet
+		}
+		
+		/**
+		 * Sets the stylesheet on the model, but also registers is with TextUtils,
+		 * since TextUtils won't have a reference to the App (or this model).
+		 */
+		public function set styleSheet(sheet:StyleSheet):void {
+			_stylesheet = TextUtils.styleSheet = sheet;
 		}
 		
 		private function onStylesError():void {
