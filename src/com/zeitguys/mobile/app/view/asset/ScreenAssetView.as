@@ -54,27 +54,24 @@
 		}
 		
 		/**
-		 * Assigns this Asset to a Screen. 
-		 * Arguably more importantly, digs through the screen's MovieClip to find this asset's MovieClip,
-		 * and assigns that to _clip.
+		 * Assigns this Asset to a Screen and initializes the Asset.
 		 * 
-		 * Override in child classes to provide exact path to clip.
+		 * Most often called by {@link ScreenView.addAsset()} or indirectly via {@link FlexGroup.registerAssetWithScreen()}.
 		 * 
-		 * @TODO Make this method more universal and traverse the screen's object model to find the child clip.
+		 * Can also be called directly if a ScreenView is passed in the ScreenAssetView's constructor.
+		 * 
+		 * @uses #findClip() to locate the asset (by name) within the ScreenView's MovieClip.
+		 * 
+		 * @triggers AssetView.init()
 		 */
 		public function set screen(screen:ScreenView):void {
 			_screen = screen;
 			
-			if (findClip(DisplayObjectContainer(screen.clip))) {
+			findClip(DisplayObjectContainer(screen.clip))
 				
-				init();
-				
-				// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
-				if (_disabled) {
-					onDisabled();
-				}
-			} else {
-				throw new IllegalOperationError("Unable to set the screen " + screenName + " on ScreenAsset " + _clipName);
+			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
+			if (_disabled) {
+				onDisabled();
 			}
 		}
 		

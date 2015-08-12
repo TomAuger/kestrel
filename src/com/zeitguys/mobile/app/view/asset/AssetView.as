@@ -22,6 +22,7 @@ package com.zeitguys.mobile.app.view.asset
 		
 		protected var _numberFormatter:NumberFormatter;
 		
+		protected var _initialized:Boolean = false;
 		protected var _active:Boolean = false;
 		protected var _disabled:Boolean = false;
 		
@@ -227,6 +228,11 @@ package com.zeitguys.mobile.app.view.asset
 			// Store the clip's original coords.
 			_clipOrigX = _clip.x;
 			_clipOrigY = _clip.y;
+			
+			if (! _initialized) {
+				init();
+				_initialized = true;
+			}
 		}
 		
 		/**
