@@ -37,7 +37,7 @@ package com.zeitguys.mobile.app.model {
 		protected var _loader:AssetLoader = AssetLoader.getInstance();
 		protected var _localizationQueue:Object = { };
 		
-		protected var _emptyXML:XMLList = new XMLList();
+		protected var _emptyXML:XMLList;
 		
 		private static var __instance:Localizer;
 		
