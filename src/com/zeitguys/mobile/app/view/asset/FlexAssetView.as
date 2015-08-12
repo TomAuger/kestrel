@@ -115,31 +115,11 @@ package com.zeitguys.mobile.app.view.asset
 			}
 			
 			_flexGroup.update();
+			
 			super.localize(localizer);
 		}
 		
-		/**
-		 * Convenience function that interacts with the Localizer to obtain the text for this asset. Tries to pull in the bundleID,
-		 * the screenName and the Asset's id to pass to the localizer so it can fetch the corresponding text string from the 
-		 * localization XML file.
-		 * 
-		 * @see Localizer.getAssetComponentText()
-		 * 
-		 * @param	localizer The Localizer instance
-		 * @param	component The ID of the component within this ScreenAsset that we're localizing.
-		 * @param	componentID Optional. If multiple components with the same name are present within the asset, provide the unique ID to help the Localizer target the correct string.
-		 * @return
-		 */
-		protected function getAssetComponentText(localizer:Localizer, component:String, componentID:String = ""):String {
-			var parentScreen:ScreenView = getParentScreen(this);
 			
-			if (parentScreen){
-				return localizer.getAssetComponentText(parentScreen.bundle.id, parentScreen.name, id, component, componentID);
-			} else {
-				throw new IllegalOperationError("Calling getAssetComponentText() on an asset that is not attached to any screen.");
-			}
-		}
-		
 		/**
 		 * Override as needed.
 		 * 

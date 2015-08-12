@@ -257,31 +257,64 @@ package com.zeitguys.mobile.app.view.asset
 		}
 		
 		public function get screen():ScreenView {
-			if (! _parentScreen) {
-				_parentScreen = getParentScreen(this);
-			}
-			
 			return _parentScreen;
 		}
 		
 		protected function getParentScreen(child:AssetView = null):ScreenView {
-			var parentAsset:AssetView
-			
 			if (! child) {
 				child = this;
 			}
 			
-			parentAsset = child.parentAsset;
-			
-			if (parentAsset) {
-				if (parentAsset is ScreenView) {
-					return ScreenView(parentAsset);
-				} else {
-					return getParentScreen(parentAsset);
+			if (child.screen) {
+				return child.screen;
+			} else {
+				if (child.parentAsset) {
+					return getParentScreen(child.parentAsset);
 				}
 			}
 			
-			return null; // Nothing found
+			return null;
+		}
+		
+		
+		override public function localize(localizer:Localizer):void {
+			trace("Localizing " + id);
+			
+			_numberFormatter = localizer.numberFormatter;
+			
+			if (_textFieldName && _textField) {
+				setText(_textField, getAssetComponentText(localizer, _textFieldName));
+			}
+			
+			if (_childAssets.length) {
+				for each (var childAsset:AssetView in _childAssets) {
+					childAsset.localize(localizer);
+				}
+			}
+			
+			super.localize(localizer);
+		}
+		
+		/**
+		 * Convenience function that interacts with the Localizer to obtain the text for this asset. Tries to pull in the bundleID,
+		 * the screenName and the Asset's id to pass to the localizer so it can fetch the corresponding text string from the 
+		 * localization XML file.
+		 * 
+		 * @see Localizer.getAssetComponentText()
+		 * 
+		 * @param	localizer The Localizer instance
+		 * @param	component The ID of the component within this ScreenAsset that we're localizing.
+		 * @param	componentID Optional. If multiple components with the same name are present within the asset, provide the unique ID to help the Localizer target the correct string.
+		 * @return
+		 */
+		protected function getAssetComponentText(localizer:Localizer, component:String, componentID:String = ""):String {
+			var parentScreen:ScreenView = getParentScreen(this);
+			
+			if (parentScreen){
+				return localizer.getAssetComponentText(parentScreen.bundle.id, parentScreen.name, id, component, componentID);
+			} else {
+				throw new IllegalOperationError("Calling getAssetComponentText() on an asset that is not attached to any screen.");
+			}
 		}
 		
 	}

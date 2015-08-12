@@ -131,7 +131,7 @@
 		 * @param	componentID Optional. If multiple components with the same name are present within the asset, provide the unique ID to help the Localizer target the correct string.
 		 * @return
 		 */
-		protected function getAssetComponentText(localizer:Localizer, component:String, componentID:String = ""):String {
+		override protected function getAssetComponentText(localizer:Localizer, component:String, componentID:String = ""):String {
 			return localizer.getAssetComponentText(bundleID, screenName, id, component, componentID);
 		}
 	}
