@@ -81,7 +81,11 @@ package com.zeitguys.mobile.app.view.asset
 		
 		
 		/**
-		 * Called by {@link ScreenView.activate()}. Override in child classes, calling super.activate().
+		 * Activate asset and all registered child assets.
+		 * 
+		 * Called by {@link ScreenView.activate()} or {@link AssetView.activate()} from a parent AssetView.
+		 * 
+		 * Override in child classes, remembering to end with a call to `super.activate()`.
 		 * 
 		 * Any asset that has interactivity should DEFER setting any event listeners until the asset has been activated.
 		 * Similarly, it should disable any event listeners on deactivation.
@@ -93,7 +97,13 @@ package com.zeitguys.mobile.app.view.asset
 		public function activate() {
 			if ( !_active){
 				if (! _disabled){
+					// Activate any child assets that have been properly added to this clip
+					for each (var childAsset:AssetView in _childAssets) {
+						childAsset.activate();
+					}
+					
 					_active = true;
+					
 					trace("  + " + _clipName + " ACTIVATED");
 				} else {
 					trace("  + " + _clipName + " NOT activated (disabled)");
@@ -103,8 +113,17 @@ package com.zeitguys.mobile.app.view.asset
 			}
 		}
 		
+		/**
+		 * Deactivate asset and all registered child assets.
+		 * 
+		 * Override in child classes to remove event listeners etc, remembering to call `super.deactivate()` at the end.
+		 */
 		public function deactivate() {
-			if (_active){
+			if (_active) {
+				// Deactivate any child assets that have been properly added to this clip
+				for each (var childAsset:AssetView in _childAssets) {
+					childAsset.deactivate();
+				}	
 				_active = false;
 				
 				trace("  - " + _clipName + " DEACTIVATED");
