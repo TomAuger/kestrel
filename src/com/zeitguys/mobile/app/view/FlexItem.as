@@ -112,9 +112,9 @@ package com.zeitguys.mobile.app.view {
 		 */
 		public function setItemText(newText:String = ""):void {
 			if (asset) {
-				asset.setText(_textField, newText);
+				asset.setText(localizableTextField, newText);
 			} else {
-				TextUtils.setTextFieldContent(_textField, newText);
+				TextUtils.setTextFieldContent(localizableTextField, newText);
 			}
 		}
 		
