@@ -250,6 +250,8 @@ package com.zeitguys.mobile.app.view.asset
 					throw new IllegalOperationError("Setting parentAsset, but the parentAsset's clip has not yet been set.");
 				}
 			}
+			
+			_parentScreen = _parentAsset.screen;
 		}
 		
 		public function get parentAsset():AssetView {
@@ -260,12 +262,22 @@ package com.zeitguys.mobile.app.view.asset
 			return _parentScreen;
 		}
 		
+		/**
+		 * Traverses up the parentAsset chain to locate the ScreenView that this asset currently
+		 * appears on.
+		 * 
+		 * Once the Screen is found, it gets set as the _parentScreen for this asset.
+		 * 
+		 * @param	child
+		 * @return
+		 */
 		protected function getParentScreen(child:AssetView = null):ScreenView {
 			if (! child) {
 				child = this;
 			}
 			
 			if (child.screen) {
+				_parentScreen = child.screen;
 				return child.screen;
 			} else {
 				if (child.parentAsset) {
