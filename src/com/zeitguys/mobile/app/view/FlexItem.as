@@ -49,6 +49,12 @@ package com.zeitguys.mobile.app.view {
 		 * @param	textField Optional. If the item is a TextField, this argument should be omitted. If the item is a container, and you want to be able to localize the (single) textField inside that container, provide the instance name of that TextField.
 		 */
 		public function FlexItem(item:*, parentItem:FlexItem = null, textField:String = "" ) {
+			_parent = parentItem;
+			
+			if (textField) {
+				_textFieldName = textField;
+			}
+			
 			if (item is AssetView) {
 				_asset = AssetView(item);
 				if (_asset.hasClip){
@@ -59,12 +65,6 @@ package com.zeitguys.mobile.app.view {
 				_asset = null;
 			} else {
 				throw new ArgumentError("Attempting to instantiate FlexItem with a non-DisplayObject and non-ScreenAssetView : " + item.toString());
-			}
-			
-			_parent = parentItem;
-			
-			if (textField) {
-				_textFieldName = textField;
 			}
 		}
 		
