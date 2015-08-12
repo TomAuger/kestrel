@@ -189,15 +189,23 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		public function get hasLocalizableTextField():Boolean {
-			if (_textField) {
-				return true;
+			// Force update of clip if we haven't already
+			if (clip){
+				if (_textField) {
+					return true;
+				}
 			}
 			
 			return false;
 		}
 		
 		public function get localizableTextField():TextField {
-			return _textField;
+			// Force update of clip
+			if (clip){
+				return _textField;
+			}
+			
+			return null;
 		}
 		
 		/**
