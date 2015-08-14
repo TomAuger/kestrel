@@ -69,6 +69,19 @@ package com.zeitguys.mobile.app.view {
 		 * to force the dialog to close (for example, due to a timer event, or perhaps the app losing focus).
 		 * 
 		 * @see /doButtonUp()
+		 * 
+		 * @TODO There's a bit of an issue with how this all plays out. The modal is deactivated AFTER it's closed, which seems weird,
+		 * and IS weird from a trace standpoint. The issue is with how the modal is DESTROYED - we don't want to destroy the data in
+		 * the modal until after the app has had a chance to process the result of the modal click - ie, after EVENT_CLOSE is reponded to.
+		 * 
+		 * This leaves us in an ackward situation at best. We want to keep the modal in some kind of suspended state that will deactivate
+		 * before the app has a chance to bring the screen back, but not destroy until that piece is done.
+		 * 
+		 * From a trace point it's a bit weird. The problem is that if for some really weird reason you invoke the same modal as the
+		 * result of dismissing that modal, the app hangs, because the modal activates itself and then immediately deactivates itself
+		 * as the result of the previous `deactivate()` that wasn't processed yet.
+		 * 
+		 * Bottom line: don't chain the same modal off itself! For now.
 		 */
 		public function close():void {
 			var buttonData:ModalButtonData = getButtonByID(_pressedButton);
@@ -293,6 +306,7 @@ package com.zeitguys.mobile.app.view {
 		 * originally pressed button before releasing. This provides a nicer UX.
 		 */
 		public function activate() {
+			trace("[M] + Activating MODAL"); 
 			var buttonData:ModalButtonData;
 			
 			if (_buttons) {
@@ -310,6 +324,7 @@ package com.zeitguys.mobile.app.view {
 		 * Override in a child class - used for disabling interactivity in the Modal
 		 */
 		public function deactivate():void {
+			trace("[M] - Deactivating MODAL");
 			var buttonData:ModalButtonData;
 			
 			if (_buttons) {
@@ -409,6 +424,8 @@ package com.zeitguys.mobile.app.view {
 		 */
 		protected function doButtonUp(buttonData:ModalButtonData):void {
 			close();
+			
+			_pressedButton = "";
 		}
 		
 		/**
@@ -433,6 +450,7 @@ package com.zeitguys.mobile.app.view {
 			
 			_buttons = null;
 			_clip = null;
+			_pressedButton = "";
 		}
 		
 		public function get buttons():Vector.<ModalButtonData> {
