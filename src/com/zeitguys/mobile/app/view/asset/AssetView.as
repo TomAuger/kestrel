@@ -128,6 +128,8 @@ package com.zeitguys.mobile.app.view.asset
 		 * Note that activating / deactivating an asset is NOT the same as enabling / disabling an asset, and you should
 		 * always check the {@link /_disabled} status of the asset before doing anything.
 		 * 
+		 * @see get activatable() for a best practice shortcut test to determine whether to follow through with any `activate` actions.
+		 * 
 		 */
 		public function activate() {
 			if ( !_active){
@@ -239,6 +241,23 @@ package com.zeitguys.mobile.app.view.asset
 			return ! _disabled;
 		}
 		
+		/**
+		 * Shortcut to make for easier reading `activate()` overrides.
+		 * 
+		 * Child classes should test against `activatable()` before performing any
+		 * activate activities such as adding event listeners.
+		 */
+		public function get activatable():Boolean {
+			return !_active && !_disabled;
+		}
+		
+		/**
+		 * Convenience getter. Child classes can test against this as a best practice
+		 * before performing any `deactivate()` tasks, just to avoid doing redundant work.
+		 */
+		public function get deactivatable():Boolean {
+			return _active;
+		}
 		
 		
 		public function addAsset(newAsset:AssetView):AssetView {
