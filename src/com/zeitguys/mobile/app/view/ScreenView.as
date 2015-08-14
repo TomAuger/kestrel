@@ -549,7 +549,7 @@ package com.zeitguys.mobile.app.view {
 		 * The best practice is to create a shared model (often a Singleton)
 		 * that multiple ScreenView instances can access.
 		 */
-		public function set args(transitionArgs:Object):void {
+		public function set screenArgs(transitionArgs:Object):void {
 			_transitionArgs = transitionArgs;
 		}
 		
@@ -560,8 +560,8 @@ package com.zeitguys.mobile.app.view {
 		 * @param	failOnArgNotExists Generally will throw an error if you try to access an arg that is not defined. If you're not sure it will be defined, you can set this to false and bypass the error. However, it is recommended that you explicitly test using hasArg() first.
 		 * @return
 		 */
-		public function getArg(arg:String, failOnArgNotExists:Boolean = true):* {
-			if (hasArg(arg)) {
+		public function getScreenArg(arg:String, failOnArgNotExists:Boolean = true):* {
+			if (hasScreenArg(arg)) {
 				return _transitionArgs[arg];
 			} else {
 				if (failOnArgNotExists){
@@ -578,11 +578,11 @@ package com.zeitguys.mobile.app.view {
 		 * @param	arg
 		 * @return
 		 */
-		public function hasArg(arg:String):Boolean {
+		public function hasScreenArg(arg:String):Boolean {
 			return _transitionArgs.hasOwnProperty(arg);
 		}
 		
-		public function get args():Object {
+		public function get screenArgs():Object {
 			return _transitionArgs;
 		}
 		
