@@ -8,7 +8,7 @@ Kestrel provides a solid and robust multi-platform foundation for rapid mobile a
 
 ## Why another cross-platform mobile development framework?
 
-There are a ton of great ways to develop cross-platform mobile apps and new ones coming out all the time, but none of them map to a traditional Flash-based workflow. Kestrel is specifically built for individuals and agencies that have Adobe Flash based designers and developers who want to be able to build apps using their existing knowledge of Flash, its layout and drawing tools, and as little ActionScript as necessary.
+There are a [ton](https://cordova.apache.org/) of [great ways](http://phonegap.com/) to develop cross-platform mobile apps and [new ones](https://facebook.github.io/react-native/) coming out [all the time](https://www.nativescript.org/), but none of them map to a traditional Flash-based workflow. Kestrel is specifically built for individuals and agencies that have Adobe Flash based designers and developers who want to be able to build apps using their existing knowledge of Flash, its layout and drawing tools, and as little ActionScript as necessary.
 
 ### Do I need Kestrel to build mobile apps with Flash?
 
