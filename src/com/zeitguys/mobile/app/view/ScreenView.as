@@ -100,6 +100,15 @@ package com.zeitguys.mobile.app.view {
 			prepare();
 		}
 		
+		
+		
+		
+		
+		
+		/* ===========================================================================================================
+		 *                                                  WORKFLOW
+		/* ===========================================================================================================*/
+		
 		/**
 		 * Maybe override in child classes.
 		 * The Screen's Bundle has been loaded and the MovieClip associated with this Screen has been assigned to _clip.
@@ -128,7 +137,117 @@ package com.zeitguys.mobile.app.view {
 			setScreenReady();
 			
 			trace(id + " INITIALIZED");
+		}		
+		
+		/**
+		 * Override in child classes.
+		 * This method is called __every__ time a screen is displayed (switched to from another screen), just before localize() is run.
+		 * Use this method to setup things that the localizer needs to know about. 
+		 * 
+		 * @TODO: refactor to work with all AssetViews not just ScreenAssetViews.
+		 */
+		public function setupBeforeLocalize():void {
+			trace(id + " SETTING UP (before localization)");
+			
+			for each (var asset:ScreenAssetView in _assets) {
+				asset.setupBeforeLocalize();
+			}
 		}
+		
+		/**
+		 * Localize all assets. Child classes may wish to override and localize other
+		 * items as well. Just remember to call super.localize() as well!
+		 */
+		override public function localize(localizer:Localizer):void {
+			trace("Localizing Screen '" + id + "'");
+			
+			var modalID:String,
+				item:Object,
+				modal:ModalView,
+				button:ModalButtonData;
+			
+			
+			localizeModals(localizer);
+			
+			if (_screenModals.length) {
+				trace("Localizing Screen Modals.");
+			}
+				
+			for (modalID in _screenModals) {
+				item = _screenModals[modalID];
+				if (item is ModalView) {
+					modal = ModalView(item);
+					
+					// Got the modal. Localize it.
+					modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
+					
+					for each (button in modal.buttons) {
+						button.label = localizer.getModalComponentText(modalID, button.id);
+					}
+				} else {
+					throw new Error("Error with Screen Modals structure.");
+				}
+			}
+			
+			for each(var asset:ILocalizable in _assets) {
+				asset.localize(localizer);
+			}
+			
+			// Lastly, update all the FlexGroups
+			for each (var flexGroup:FlexGroup in _flexGroups) {
+				flexGroup.update();
+			}
+		}
+		
+		/**
+		 * Override in child classes.
+		 * This method is called __every__ time a screen is displayed (switched to from another screen) just after localize() is run.
+		 * This is where you should do things like initialize the screen's model, and perform set-ups that should happen every time the screen is displayed.
+		 */
+		public function setupAfterLocalize():void {
+			trace(id + " SETTING UP (after localization)");
+			
+			for each (var asset:ScreenAssetView in _assets) {
+				asset.setupAfterLocalize();
+			}
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * This method is called when a screen is displayed and a reset request has been dispatched (usually through a ScreenController call from
+		 * the previous screen).
+		 * 
+		 * Use reset() if the decision whether to reset the screen needs to be made by the previous screen before switching to the current one.
+		 */
+		public function reset():void {
+			for each (var asset:ScreenAssetView in _assets) {
+				asset.reset()
+			}
+			
+			trace(id + " RESET");
+		}
+		
+		/**
+		 * DEPRECATED
+		 */
+		public function setup():void {
+			// Echo deprecated message if a subclass tries to use this method and then calls super.setup();
+			if (arguments.callee != this.setup){
+				trace("!! setup() is DEPRECATED. Use setupBeforeLocalize() or setupAfterLocalize() instead");
+			}
+		}
+		
+		
+		
+		
+		
+		
+		/* ===========================================================================================================
+		 *                                          ASSETS and FLEXGROUPS
+		/* ===========================================================================================================*/
+		
+		
 		
 		/**
 		 * Adds an asset to the Screen, but only if the asset hasn't already been added!
@@ -185,64 +304,10 @@ package com.zeitguys.mobile.app.view {
 			return flexGroup.addAsset(addAsset(asset), parentItem);
 		}
 		
-		/**
-		 * Localize all assets. Child classes may wish to override and localize other
-		 * items as well. Just remember to call super.localize() as well!
-		 */
-		override public function localize(localizer:Localizer):void {
-			trace("LOCALIZING: " + id);
-			
-			localizeModals(localizer);
-			
-			for each(var asset:ILocalizable in _assets) {
-				asset.localize(localizer);
-			}
-			
-			// Lastly, update all the FlexGroups
-			for each (var flexGroup:FlexGroup in _flexGroups) {
-				flexGroup.update();
-			}
-		}
-		
-		/**
-		 * Override in child classes.
-		 * This method is called __every__ time a screen is displayed (switched to from another screen), just before localize() is run.
-		 * Use this method to setup things that the localizer needs to know about. 
-		 */
-		public function setupBeforeLocalize():void {
-			trace(id + " SETTING UP (before localization)");
-		}
 		
 		
-		/**
-		 * DEPRECATED
-		 */
-		public function setup():void {
-			// Echo deprecated message if a subclass tries to use this method and then calls super.setup();
-			if (arguments.callee != this.setup){
-				trace("!! setup() is DEPRECATED. Use setupBeforeLocalize() or setupAfterLocalize() instead");
-			}
-		}
 		
-		/**
-		 * Override in child classes.
-		 * This method is called __every__ time a screen is displayed (switched to from another screen) just after localize() is run.
-		 * This is where you should do things like initialize the screen's model, and perform set-ups that should happen every time the screen is displayed.
-		 */
-		public function setupAfterLocalize():void {
-			trace(id + " SETTING UP (after localization)");
-		}
 		
-		/**
-		 * Override in child classes.
-		 * This method is called when a screen is displayed and a reset request has been dispatched (usually through a ScreenController call from
-		 * the previous screen).
-		 * 
-		 * Use this instead of setup() if you 
-		 */
-		public function reset():void {
-			trace(id + " RESET");
-		}
 		
 		/**
 		 * Sets both the default transitioni and the current TransitionOut.
@@ -657,27 +722,16 @@ package com.zeitguys.mobile.app.view {
 			return modal;
 		}
 		
+		/**
+		 * Override in child classes. This is the best place to define your Screen's Modals,
+		 * using addModal().
+		 * 
+		 * Technically, this doesn't actually localize your Modals - that's still done in {@link #localize()}.
+		 * 
+		 * @param	localizer
+		 */
 		protected function localizeModals(localizer:Localizer):void {
-			var modalID:String,
-				item:Object,
-				modal:ModalView,
-				button:ModalButtonData;
-				
-			for (modalID in _screenModals) {
-				item = _screenModals[modalID];
-				if (item is ModalView) {
-					modal = ModalView(item);
-					
-					// Got the modal. Localize it.
-					modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
-					
-					for each (button in modal.buttons) {
-						button.label = localizer.getModalComponentText(modalID, button.id);
-					}
-				} else {
-					throw new Error("Error with Screen Modals structure.");
-				}
-			}
+			
 		}
 		
 		protected function getModal(id:String):ModalView {
