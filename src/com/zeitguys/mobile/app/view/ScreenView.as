@@ -5,6 +5,7 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.model.Localizer;
 	import com.zeitguys.mobile.app.model.ScreenBundle;
 	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
+	import com.zeitguys.mobile.app.view.asset.AssetView;
 	import com.zeitguys.mobile.app.view.transition.TransitionBase;
 	import com.zeitguys.mobile.app.view.ViewBase;
 	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
@@ -52,7 +53,7 @@ package com.zeitguys.mobile.app.view {
 		
 		protected var _bundle:ScreenBundle;
 		protected var _screenRouter:ScreenRouter;
-		protected var _assets:Vector.<ScreenAssetView> = new Vector.<ScreenAssetView>;
+		protected var _assets:Vector.<ScreenAssetView> = new Vector.<ScreenAssetView>; // @TODO refactor to <AssetView>
 		protected var _textFields:Array = [];
 		
 		public var bundleIndex:uint;
