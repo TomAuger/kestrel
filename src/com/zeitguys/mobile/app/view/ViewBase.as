@@ -6,6 +6,7 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.util.TextUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.MovieClip;
 	import flash.errors.IllegalOperationError;
 	import flash.events.EventDispatcher;
 	import flash.text.TextField;
@@ -61,6 +62,17 @@ package com.zeitguys.mobile.app.view {
 			}
 			
 			return false;
+		}
+		
+		/**
+		 * Convenience method. Casts the clip as a MovieClip if it can. 
+		 */
+		public function get movieClip():MovieClip {
+			if (clip && clip is MovieClip) {
+				return clip as MovieClip;
+			}
+			
+			return null;
 		}
 		
 		public function get parentClip():DisplayObjectContainer {
