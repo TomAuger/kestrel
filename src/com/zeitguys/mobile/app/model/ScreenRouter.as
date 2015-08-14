@@ -111,7 +111,7 @@ package com.zeitguys.mobile.app.model {
 				newScreen.setup();
 				
 				// Set args on the incoming screen, usually passed from the setScreen() method.
-				newScreen.args = screenArgs;
+				newScreen.screenArgs = screenArgs;
 				
 				// Run setupBeforeLocalize() every time.
 				newScreen.setupBeforeLocalize();

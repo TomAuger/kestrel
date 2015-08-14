@@ -64,7 +64,7 @@ package com.zeitguys.mobile.app.view {
 		protected var _screenReady:Boolean = false;
 		protected var _screenActivated:Boolean = false; // use status to tell whether a screen has been activated. This is used to determine whether first-run initialization activites should take place
 		
-		protected var _transitionArgs:Object = { };
+		protected var _screenArgs:Object = { };
 		protected var _TransitionOut:Class;
 		protected var _DefaultTransition:Class;
 		
@@ -549,20 +549,27 @@ package com.zeitguys.mobile.app.view {
 		 * The best practice is to create a shared model (often a Singleton)
 		 * that multiple ScreenView instances can access.
 		 */
-		public function set screenArgs(transitionArgs:Object):void {
-			_transitionArgs = transitionArgs;
+		public function set screenArgs(args:Object):void {
+			_screenArgs = args;
+		}
+		
+		/**
+		 * Get all args set 
+		 */
+		public function get screenArgs():Object {
+			return _screenArgs;
 		}
 		
 		/**
 		 * Get a single arg's value.
 		 * 
-		 * @param	arg
+		 * @param	arg Argument name (key)
 		 * @param	failOnArgNotExists Generally will throw an error if you try to access an arg that is not defined. If you're not sure it will be defined, you can set this to false and bypass the error. However, it is recommended that you explicitly test using hasArg() first.
 		 * @return
 		 */
 		public function getScreenArg(arg:String, failOnArgNotExists:Boolean = true):* {
 			if (hasScreenArg(arg)) {
-				return _transitionArgs[arg];
+				return _screenArgs[arg];
 			} else {
 				if (failOnArgNotExists){
 					throw new ArgumentError("Screen arg '" + arg + "' is not defined.");
@@ -573,17 +580,24 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
+		 * Set an individual Screen Argument. If you have multiple ScreenArgs to set at once,
+		 * consider just using {@link set screenArgs()} and pass the complete object.
+		 * 
+		 * @param	arg Argument name (key)
+		 * @param	value
+		 */
+		public function setScreenArg(arg:String, value:*):void {
+			_screenArgs[arg] = value;
+		}
+		
+		/**
 		 * Tests whether the arg has been set by the previous screen.
 		 * 
 		 * @param	arg
 		 * @return
 		 */
 		public function hasScreenArg(arg:String):Boolean {
-			return _transitionArgs.hasOwnProperty(arg);
-		}
-		
-		public function get screenArgs():Object {
-			return _transitionArgs;
+			return _screenArgs.hasOwnProperty(arg);
 		}
 		
 		/**
