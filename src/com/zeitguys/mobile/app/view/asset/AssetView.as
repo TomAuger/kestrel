@@ -54,12 +54,45 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * This may happen only once, event if the assets is accessed multiple times.
 		 * 
-		 * Consider waiting for {@link #activate()} before defining event listeners though.
+		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
 		public function init():void {
 			
 		}
 		
+		/**
+		 * Override in child classes.
+		 * This method is called __every__ time a screen is displayed (switched to from another screen), just before localize() is run.
+		 * Use this method to setup things that the localizer needs to know about. 
+		 */
+		public function setupBeforeLocalize():void {
+			for each (var asset:AssetView in _childAssets) {
+				asset.setupBeforeLocalize();
+			}
+		}
+		
+		/**
+		 * Override in child classes.
+		 * This method is called __every__ time a screen is displayed (switched to from another screen) just after localize() is run.
+		 * This is where you should do things like initialize the screen's model, and perform set-ups that should happen every time the screen is displayed.
+		 */
+		public function setupAfterLocalize():void {
+			for each (var asset:AssetView in _childAssets) {
+				asset.setupAfterLocalize();
+			}
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * This method is called when a screen is displayed and a reset request has been dispatched (usually through a ScreenController call from
+		 * the previous screen).
+		 */
+		public function reset():void {
+			for each (var asset:AssetView in _childAssets) {
+				asset.reset();
+			}
+		}
 		
 		/**
 		 * Override in child classes.
@@ -78,6 +111,8 @@ package com.zeitguys.mobile.app.view.asset
 		protected function onEnabled() {
 			
 		}
+		
+		
 		
 		
 		/**
@@ -309,7 +344,7 @@ package com.zeitguys.mobile.app.view.asset
 		
 		
 		override public function localize(localizer:Localizer):void {
-			trace("Localizing " + id);
+			trace("Localizing Asset '" + id + "'");
 			
 			_numberFormatter = localizer.numberFormatter;
 			
