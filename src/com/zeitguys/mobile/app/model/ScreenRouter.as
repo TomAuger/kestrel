@@ -90,9 +90,9 @@ package com.zeitguys.mobile.app.model {
 				
 				// Stash the screen arguments, or clear them.
 				if (args) {
-					_screenArgs = args;
+					screenArgs = args;
 				} else {
-					_screenArgs = { };
+					screenArgs = { };
 				}
 				
 				trace("---------------------------------------------\nSetting SCREEN to: " + newScreen.id);
