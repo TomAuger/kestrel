@@ -18,18 +18,24 @@ package com.zeitguys.util {
 		 * a DisplayObject, consider {@link debugClip()} instead.
 		 * 
 		 * @param	obj
+		 * @param	message Optional. Will output a message before the output, to help you find it in your mess of traces!
 		 * @param	level Optional. Used to determine indent level. If this is anything other than 0, output will be returned, not traced.
 		 * @param	output Optional. Unused. Leaving it in for nostalgic reasons.
 		 * @return
 		 */
-		public static function print_r(obj:*, level:int = 0, output:String = ""):* {
+		public static function print_r(obj:*, message:String = "", level:int = 0, output:String = ""):* {
 			var tabs:String = "";
+			
+			if (message){
+				output += "\n" + message + "------------------------------------------------------\n";
+			}
+			
 			for(var i:int = 0; i < level; i++, tabs += "\t"){}
 			
 			for(var child:* in obj) {
 				output += tabs +"["+ child +"] => "+ obj[child];
 				
-				var childOutput:String = print_r(obj[child], level+1);
+				var childOutput:String = print_r(obj[child], "", level+1);
 				if(childOutput != '') output += ' {\n'+ childOutput + tabs +'}';
 				
 				output += "\n";
