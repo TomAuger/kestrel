@@ -568,7 +568,7 @@ package com.zeitguys.mobile.app {
 		/**
 		 * Used by the App to set the first (usually "loading") screen.
 		 * Also sets up the event listener, which is really important if you want to be able to do something visually
-		 * when the model changes screens.
+		 * when the router changes screens.
 		 */
 		public function set firstScreen(screenID:String):void {
 			_screenRouter.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
@@ -719,6 +719,10 @@ package com.zeitguys.mobile.app {
 		
 		// Config
 		
+		// We don't define a get config() because you really want to define that getter
+		// in your child App class, so it can be cast to your child AppConfigModel,
+		// otherwise you'll constantly be manually casting it every time you use it,
+		// or you'll just have to set up some other, more cumbersome accessor method name.
 		
 		
 		public function get theme():Object {
