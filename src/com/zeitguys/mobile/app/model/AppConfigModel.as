@@ -20,16 +20,14 @@
 		public static const EVENT_CONFIG_ERROR:String = 'app-config-error';
 		
 		protected var LOCAL_STORAGE_ID:String = 'appConfig';
-		
-		public var localStorage:SharedObject;
+		private var _localStorageCache:Object = { };
 		
 		protected var _data:XML;
-		
 		protected var _isLoaded:Boolean;
-		
 		protected var _url:String;
-		
 		protected var _stylesheet:StyleSheet = new StyleSheet();
+		
+		protected var _firstRun:Boolean = true;
 		
 		private var _request:URLRequest;
 		private var _loader:URLLoader = new URLLoader();
@@ -53,14 +51,18 @@
 		
 		public function AppConfigModel(url:String = "") {
 			_url = url;
-			localStorage = SharedObject.getLocal( LOCAL_STORAGE_ID );
 		}
+		
 		/**
 		 * If a URL is provided, load the XML file, otherwise short-circuit and complete.
 		 * 
 		 * @param	url
 		 */
-		public function load():void {
+		public function load(url:String = ""):void {
+			if (url) {
+				_url = url;
+			}
+			
 			if (_url) {
 				_request = new URLRequest(_url);
 				_loader.addEventListener(Event.COMPLETE, onLoadComplete);
@@ -78,7 +80,7 @@
 				_isLoaded = true;
 				dispatchEvent(new Event(EVENT_CONFIG_LOADED));
 				removeListeners();
-			} 
+			}
 		}
 	
 	
@@ -145,17 +147,17 @@
 		}
 		
 		public function get defaultLanguage():String {
-			trace(_data.child('languages').attribute('default_language'));
 			return _data.child('languages').attribute('default_language');
 		}
 		
 		public function get currentLanguage():String {
-			return localStorage.data['language'];
+			return getLocal('language');
 		}
 		
 		public function set currentLanguage(language:String):void {
 			trace('setting app language to remember', language);
-			localStorage.data['language'] = language;
+			
+			setLocal('language', language);
 		}
 		
 		public function get languages():Array {
@@ -164,6 +166,7 @@
 			for (var i:uint = 0; i < languages.length(); i++) {
 				output.push({ value: languages[i].attribute('code'), label: languages[i] });
 			}
+			
 			return output;
 		}
 		
@@ -174,11 +177,58 @@
 					return languages[i].label;
 				}
 			}
+			
 			return '';
 		}
 		
 		public function get data():XML {
 			return _data;
+		}
+		
+		/**
+		 * Determines whether this is the first time the App has been run (based on
+		 * the presence of a key in LocalStorage).
+		 */
+		public function get firstRun():Boolean {
+			if (getLocal('runBefore')) {
+				_firstRun = false;
+			} else {
+				setLocal('runBefore', true);
+				
+				_firstRun = true;
+				trace("App FIRST RUN detected.");
+			}
+			
+			return _firstRun;
+		}
+		
+		/**
+		 * Retrieve a single value from the App Config local storage.
+		 * 
+		 * Leverages basic cacheing for performance.
+		 * 
+		 * @param	key
+		 * @param	required If `true`, will throw an error if the key is missing.
+		 * @return
+		 */
+		protected function getLocal(key:String, required:Boolean = false):* {
+			if (key in _localStorageCache) {
+				return _localStorageCache[key];
+			}
+			
+			return _localStorageCache[key] = LocalStorage.fetch(key, required, LOCAL_STORAGE_ID);
+		}
+		
+		/**
+		 * Store a single value to the App Config local storage, and stash it in the cache as well.
+		 * 
+		 * @param	key
+		 * @param	value
+		 */
+		protected function setLocal(key:String, value:*):void {
+			_localStorageCache[key] = value;
+			
+			LocalStorage.stash(key, value, LOCAL_STORAGE_ID);
 		}
 	}
 
