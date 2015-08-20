@@ -134,10 +134,22 @@ package com.zeitguys.mobile.app.view {
 		 * Upon completion, screen will be "Ready".
 		 */
 		protected function initStage():void {
+			defineAssets();
 			setScreenReady();
 			
 			trace(id + " INITIALIZED");
-		}		
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Screen has been added to the stage and it's time to connect all the DisplayObjects created in Flash with
+		 * the AssetView classes that give them functionality. This is the place to do it, using {@link addAsset()},
+		 * {@link addAssets()} (for more than one asset at a time), or {@link addFlexAsset()}
+		 */
+		protected function defineAssets():void {
+			// Abstract class.
+		}
 		
 		/**
 		 * Override in child classes.
@@ -664,7 +676,7 @@ package com.zeitguys.mobile.app.view {
 		 * Define the list of assets (buttons, textboxes, interactive elements) that are present in this Screen.
 		 * @param	assets
 		 */
-		protected function defineAssets(assets:Vector.<ScreenAssetView>):void {
+		protected function addAssets(assets:Vector.<ScreenAssetView>):void {
 			for each(var asset:ScreenAssetView in assets) {
 				addAsset(asset);
 			}
