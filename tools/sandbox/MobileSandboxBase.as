@@ -19,7 +19,7 @@
 	 * @author Tom Auger
 	 */
 	public class MobileSandboxBase extends MovieClip {
-		private var msg:MessageView;
+		protected var msg:MessageView;
 		
 		public function MobileSandboxBase() {
 			stage.scaleMode = StageScaleMode.NO_SCALE;
