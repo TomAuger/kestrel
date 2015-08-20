@@ -9,6 +9,8 @@ package com.zeitguys.util {
 	public class DebugUtils {
 		private static var __instance:DebugUtils;
 		
+		private static const MAX_RECURSION_LEVELS:uint = 10;
+		
 		public function DebugUtils() { }
 		
 		/**
@@ -19,12 +21,17 @@ package com.zeitguys.util {
 		 * 
 		 * @param	obj
 		 * @param	message Optional. Will output a message before the output, to help you find it in your mess of traces!
+		 * @param	echo Optional. Default true. If true, will trace the output as well as return it.
 		 * @param	level Optional. Used to determine indent level. If this is anything other than 0, output will be returned, not traced.
 		 * @param	output Optional. Unused. Leaving it in for nostalgic reasons.
 		 * @return
 		 */
-		public static function print_r(obj:*, message:String = "", level:int = 0, output:String = ""):* {
+		public static function print_r(obj:*, message:String = "", echo:Boolean=true, level:int = 0, output:String = ""):String {
 			var tabs:String = "";
+			
+			if (level > MAX_RECURSION_LEVELS) {
+				return output;
+			}
 			
 			if (message){
 				output += "\n" + message + "------------------------------------------------------\n";
@@ -35,14 +42,17 @@ package com.zeitguys.util {
 			for(var child:* in obj) {
 				output += tabs +"["+ child +"] => "+ obj[child];
 				
-				var childOutput:String = print_r(obj[child], "", level+1);
+				var childOutput:String = print_r(obj[child], "", false, level+1);
 				if(childOutput != '') output += ' {\n'+ childOutput + tabs +'}';
 				
 				output += "\n";
 			}
 			
-			if(level == 0) trace(output);
-			else return output;
+			if (echo) {
+				trace(output)
+			}
+			
+			return output;
 		}
 		
 		/**
@@ -52,9 +62,10 @@ package com.zeitguys.util {
 		 * duplicate instance names. This is much more reliable than print_r
 		 * 
 		 * @param	clip DisplayObject or most usually DisplayObjectContainer that you want to debug
+		 * @param	echo Optional. Default true. If true, will trace the output.
 		 * @param	level Optional. Generally, leave this out - determines the indent level
 		 */
-		public static function debugClip(clip:DisplayObject, level:int = 0) {
+		public static function debugClip(clip:DisplayObject, echo:Boolean = true, level:int = 0):String {
 			var tabs:String = "";
 			var i:uint;
 			var l:uint;
@@ -79,11 +90,11 @@ package com.zeitguys.util {
 				output += "\n";
 			}
 			
-			if (level == 0) {
+			if (echo) {
 				trace(output);
-			} else {
-				return output;
 			}
+			
+			return output;
 		}
 	
 	}
