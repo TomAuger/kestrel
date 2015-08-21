@@ -235,8 +235,12 @@ package com.zeitguys.mobile.app.view.asset
 			}
 		}
 		
-		public function get isActivated():Boolean {
-			return _active;
+		/**
+		 * Not the same as checking `_active`, this will tell you if the item 
+		 * has been activated AND is not disabled.
+		 */
+		public function get isActive():Boolean {
+			return _active && (! _disabled);
 		}
 		
 		public function get isEnabled():Boolean {
