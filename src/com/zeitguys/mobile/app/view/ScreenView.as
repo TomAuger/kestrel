@@ -723,15 +723,7 @@ package com.zeitguys.mobile.app.view {
 		 */
 		override public function get id():String {
 			return _id;
-		}
-		
-		/**
-		 * The name of the Screen corresponds exactly to the Screen's movieClip's instance name.
-		 */
-		public function get name():String {
-			return _clipName;
-		}
-		
+		}		
 		
 		
 		

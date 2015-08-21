@@ -199,6 +199,11 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		public function get clipName():String {
+			trace("Deprecated: `ViewBase.get clipName()`. Use `ViewBase.get name()` instead.");
+			return _clipName;
+		}
+		
+		public function get name():String {
 			return _clipName;
 		}
 		
