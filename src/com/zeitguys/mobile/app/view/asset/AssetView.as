@@ -59,7 +59,12 @@ package com.zeitguys.mobile.app.view.asset
 		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
 		public function init():void {
-			
+				
+			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
+			if (_disabled) {
+				trace("  / " + _clipName + " starting DISABLED");
+				onDisabled();
+			}
 		}
 		
 		/**
@@ -189,7 +194,7 @@ package com.zeitguys.mobile.app.view.asset
 					deactivate();
 				}
 			} else {
-				trace("  - " + id + " SKIPPING disable");
+				trace("  - " + id + " DISABLE skipped (already disabled)");
 			}
 		}
 		
@@ -211,7 +216,7 @@ package com.zeitguys.mobile.app.view.asset
 					activate();
 				}
 			} else {
-				trace("  + " + id + " SKIPPING enable");
+				trace("  + " + id + " ENABLE skipped (already enabled)");
 			}
 		}
 		

@@ -67,12 +67,7 @@
 		public function set screen(screen:ScreenView):void {
 			_screen = screen;
 			
-			findClip(DisplayObjectContainer(screen.clip))
-				
-			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
-			if (_disabled) {
-				onDisabled();
-			}
+			findClip(DisplayObjectContainer(screen.clip));
 		}
 		
 		override public function get screen():ScreenView {
