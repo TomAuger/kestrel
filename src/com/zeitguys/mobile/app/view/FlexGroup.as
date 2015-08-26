@@ -163,7 +163,11 @@ package com.zeitguys.mobile.app.view {
 		 * @see FlexItem.update()
 		 * @see FlexItem.updateChildren()
 		 */
-		public function update():void {			
+		public function update():void {		
+			if (! _flexItems.length) {
+				return;
+			}
+			
 			for each (var item:FlexItem in _flexItems) {
 				if (! item.hasParent) {
 					item.update();
