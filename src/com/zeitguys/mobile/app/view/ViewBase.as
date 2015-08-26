@@ -147,7 +147,7 @@ package com.zeitguys.mobile.app.view {
 		 * @param	localizer
 		 */
 		public function localize(localizer:Localizer):void {
-			trace("LOCALIZING: " + _clipName);
+			
 		}
 		
 		/**
