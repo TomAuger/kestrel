@@ -146,43 +146,57 @@
 			_request = null;
 		}
 		
-		public function get defaultLanguage():String {
-			return _data.child('languages').attribute('default_language');
-		}
-		
 		public function get currentLanguage():String {
 			return getLocal('language');
 		}
 		
 		public function set currentLanguage(language:String):void {
-			trace('setting app language to remember', language);
-			
 			setLocal('language', language);
 		}
 		
-		public function get languages():Array {
-			var languages:XMLList = _data.child('languages').children();
-			var output:Array = new Array();
-			for (var i:uint = 0; i < languages.length(); i++) {
-				output.push({ value: languages[i].attribute('code'), label: languages[i] });
-			}
-			
-			return output;
-		}
-		
-		public function getLanguageLabel(language:String = ''):String {
-			language ||= defaultLanguage;
-			for (var i:uint = 0; i < languages.length; i++) {
-				if (language == languages[i].value) {
-					return languages[i].label;
-				}
-			}
-			
-			return '';
-		}
+		//public function get languages():Array {
+			//var languages:XMLList = _data.child('languages').children();
+			//var output:Array = new Array();
+			//for (var i:uint = 0; i < languages.length(); i++) {
+				//output.push({ value: languages[i].attribute('code'), label: languages[i] });
+			//}
+			//
+			//return output;
+		//}
+		//
+		//public function getLanguageLabel(language:String = ''):String {
+			//language ||= defaultLanguage;
+			//for (var i:uint = 0; i < languages.length; i++) {
+				//if (language == languages[i].value) {
+					//return languages[i].label;
+				//}
+			//}
+			//
+			//return '';
+		//}
 		
 		public function get data():XML {
 			return _data;
+		}
+		
+		/**
+		 * Dig into the _data XML, and optionally provide a default value if the data doesn't exist.
+		 * 
+		 * @param	key
+		 * @param	attribute
+		 * @param	defaultValue
+		 * @return
+		 */
+		protected function getData(key:String, attribute:String = "", defaultValue:* = null):* {
+			if (! _data || ! _data.child(key).length) {
+				return defaultValue;
+			}
+			
+			if (attribute) {
+				return _data.child(key).attribute(attribute) || defaultValue;
+			}
+			
+			return _data.child(key) || defaultValue;
 		}
 		
 		/**

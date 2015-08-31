@@ -86,6 +86,7 @@ package com.zeitguys.mobile.app {
 		
 		protected var _supportsAutoOrients:Boolean = true;
 		
+		protected var _defaultLanguageCode:String = "en_US";
 		protected var localizer:Localizer;
 		
 		public function AppBase() {
@@ -106,6 +107,7 @@ package com.zeitguys.mobile.app {
 		 * Endpoint child classes should avoid touching this altogether and use {@link /initialize()} instead.
 		 */
 		protected function init():void {
+			// Register this app with ViewBase, so all Views get access to an `app` getter for convenience.
 			ViewBase.setApp(this);
 		}
 		
@@ -674,46 +676,28 @@ package com.zeitguys.mobile.app {
 		 */
 		public function localize(target:ILocalizable):void {
 			if (localizer) {
-				//var success:Boolean = target.localize(localizer);
 				localizer.localize(target);
 			}
 		}
 		
-		public function changeLanguage(language:String, nextScreen:String = ''):void {
+		public function changeLanguage(languageCode:String, nextScreen:String = ''):void {
 			_nextScreen = nextScreen;
+			
 			localizer.addEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
-			localizer.language = language;
-			_appConfig.currentLanguage = localizer.language;
+			localizer.setLanguageWithFallback(languageCode);
 		}
 		
 		protected function onLanguageChanged(e:Event):void {
 			localizer.removeEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
+			
 			dispatchEvent(new Event(EVENT_LANGUAGE_CHANGED));
-			var loader:AssetLoader = AssetLoader.getInstance();
-			trace(loader.queue);
-			if (loader.queue) {
-				router.setScreen('main__loader');
-			} else {
-				router.setScreen(_nextScreen);
-			}
 		}
 		
 		/**
-		 * Access the current language of the localizer.
+		 * Access the current language of the app.
 		 */
 		public function get currentLanguage():String {
-			if (localizer) {
-				return localizer.language;
-			}
-			
-			return "";
-		}
-		
-		/**
-		 * Change the current language of the app.
-		 */
-		public function set currentLanguage(language:String):void {
-			localizer.language = language;
+			return _appConfig.currentLanguage || _defaultLanguageCode;
 		}
 		
 		
