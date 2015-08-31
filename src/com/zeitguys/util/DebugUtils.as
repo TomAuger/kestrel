@@ -80,7 +80,7 @@ package com.zeitguys.util {
 				l = DisplayObjectContainer(clip).numChildren;
 				if (l) {
 					for (i = 0; i < l; ++i) {
-						output += debugClip(DisplayObjectContainer(clip).getChildAt(i), level + 1);						
+						output += debugClip(DisplayObjectContainer(clip).getChildAt(i), false, level + 1);						
 					}
 				} else {
 					output += tabs + "\t" + "(no children)\n";
