@@ -179,27 +179,27 @@ package com.zeitguys.mobile.app.view {
 				button:ModalButtonData;
 			
 			
-			localizeModals(localizer);
+			defineModals(localizer);
 			
-			if (_screenModals.length) {
-				trace("Localizing Screen Modals.");
-			}
-				
-			for (modalID in _screenModals) {
-				item = _screenModals[modalID];
-				if (item is ModalView) {
-					modal = ModalView(item);
-					
-					// Got the modal. Localize it.
-					modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
-					
-					for each (button in modal.buttons) {
-						button.label = localizer.getModalComponentText(modalID, button.id);
-					}
-				} else {
-					throw new Error("Error with Screen Modals structure.");
-				}
-			}
+			//if (_screenModals.length) {
+				//trace("Localizing Screen Modals.");
+			//}
+				//
+			//for (modalID in _screenModals) {
+				//item = _screenModals[modalID];
+				//if (item is ModalView) {
+					//modal = ModalView(item);
+					//
+					//// Got the modal. Localize it.
+					//modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
+					//
+					//for each (button in modal.buttons) {
+						//button.label = localizer.getModalComponentText(modalID, button.id);
+					//}
+				//} else {
+					//throw new Error("Error with Screen Modals structure.");
+				//}
+			//}
 			
 			for each(var asset:ILocalizable in _assets) {
 				asset.localize(localizer);
@@ -733,22 +733,21 @@ package com.zeitguys.mobile.app.view {
 		/* ===========================================================================================================*/
 		
 		protected function addModal(id:String, bodyText:String = "", ... modalArgs):ModalView {
-			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
+			trace("Adding Screen Modal [" + id + "]");
 			
+			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
 			_screenModals[id] = modal;
 			
 			return modal;
 		}
 		
 		/**
-		 * Override in child classes. This is the best place to define your Screen's Modals,
+		 * Abstract method. Override in child classes as needed. This is the best place to define your Screen's Modals,
 		 * using addModal().
-		 * 
-		 * Technically, this doesn't actually localize your Modals - that's still done in {@link #localize()}.
 		 * 
 		 * @param	localizer
 		 */
-		protected function localizeModals(localizer:Localizer):void {
+		protected function defineModals(localizer:Localizer):void {
 			
 		}
 		
