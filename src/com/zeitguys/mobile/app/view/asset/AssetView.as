@@ -92,8 +92,14 @@ package com.zeitguys.mobile.app.view.asset
 		/**
 		 * Override in child classes.
 		 * 
-		 * This method is called when a screen is displayed and a reset request has been dispatched (usually through a ScreenController call from
+		 * This method is called when a screen is displayed and a reset request has been dispatched (usually through a ScreenRouter call from
 		 * the previous screen).
+		 * 
+		 * The current implementation of ScreenRouter defaults `resetView` to `true`, so unless explicitly set to `false`, ALL
+		 * `setScreen()` calls WILL also call `reset()` on the ScreenView, and thus on all child assets.
+		 * 
+		 * For now, you should assume `reset()` will be called EVERY TIME the current screen is switched to.
+		 * This is usually a Good Thing.
 		 */
 		public function reset():void {
 			for each (var asset:AssetView in _childAssets) {
