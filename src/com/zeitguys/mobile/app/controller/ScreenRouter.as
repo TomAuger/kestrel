@@ -1,4 +1,4 @@
-package com.zeitguys.mobile.app.controller {
+﻿package com.zeitguys.mobile.app.controller {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.errors.IllegalOperationError;
