@@ -2,6 +2,7 @@ package com.zeitguys.mobile.app {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.model.AssetLoader;
 	import com.zeitguys.mobile.app.model.event.AssetLoaderEvent;
+	import com.zeitguys.mobile.app.model.MainScreenBundle;
 	import com.zeitguys.mobile.app.view.ActionSheetModalView;
 	import com.zeitguys.mobile.app.view.ModalFactory;
 	import com.zeitguys.mobile.app.view.ModalView;
@@ -179,7 +180,11 @@ package com.zeitguys.mobile.app {
 			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 			
 			// Register this app with ViewBase, so all Views get access to an `app` getter for convenience.
+			trace("Registering App with ViewBase.");
 			ViewBase.setApp(this);
+			// Register the app with MainScreenBundle, so client apps don't need to worry about that when implementing IScreenList.
+			trace("Registering App with MainScreenBundle.");
+			MainScreenBundle.setApp(this);
 			
 			if (_supportsAutoOrients) {
 				stage.align = StageAlign.TOP_LEFT;
