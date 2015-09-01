@@ -1,4 +1,4 @@
-package com.zeitguys.mobile.app.view {
+﻿package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
@@ -277,8 +277,8 @@ package com.zeitguys.mobile.app.view {
 			switch(alignment) {
 				// May need to take status bar into account for iOS6
 				case ALIGNMENT_CENTERED :
-					_clip.x = _parent.stage.stageWidth / 2 - (_clip.width / 2);
-					_clip.y = _parent.stage.stageHeight / 2 - (_clip.height / 2);
+					clip.x = _parent.stage.stageWidth / 2 - (clip.width / 2);
+					clip.y = _parent.stage.stageHeight / 2 - (clip.height / 2);
 					break;
 				default :
 					throw new RangeError("'" + alignment + "' is not a recognized Modal alignment.");
@@ -449,8 +449,9 @@ package com.zeitguys.mobile.app.view {
 			deactivate();
 			
 			_buttons = null;
-			_clip = null;
 			_pressedButton = "";
+			
+			setClip(null);
 		}
 		
 		public function get buttons():Vector.<ModalButtonData> {

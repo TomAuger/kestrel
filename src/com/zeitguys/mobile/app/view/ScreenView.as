@@ -1,4 +1,4 @@
-package com.zeitguys.mobile.app.view {
+﻿package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import com.zeitguys.mobile.app.model.ILocalizable;
@@ -21,7 +21,7 @@ package com.zeitguys.mobile.app.view {
 	 * The following hooks are available for child classes to extend, throughout the lifecycle and startup of the screen:
 	 * * (Constructor): the screen is added to the queue, and usually loading of its assets starts. Generally we don't do anything here; maybe define the screen model.
 	 * 
-	 * * onClipLoaded: the screen is loaded and its clip has been transferred to _clip. Does not have access to Stage yet.
+	 * * onClipLoaded: the screen is loaded and its clip has been transferred to clip. Does not have access to Stage yet.
 	 * 
 	 * * initStage: Called ONCE per screen, when the screen clip has been added to a DisplayList. That doesn't necessarily mean that it is currently visible. However, it DOES mean that the View has access to all its DisplayObjects, so this is generally where you assign Assets
 	 * 
@@ -72,19 +72,18 @@ package com.zeitguys.mobile.app.view {
 		
 		protected var _status:String = STATUS_NOT_READY;
 		
-		public function ScreenView(clip:*, bundle:ScreenBundle = null) {
+		public function ScreenView(screenClip:*, bundle:ScreenBundle = null) {
 			if (bundle) {
 				// Use the setter with all its special sauce
 				this.bundle = bundle;
 			}
 			
-			if (clip is DisplayObjectContainer) {
-				_clip = DisplayObjectContainer(clip);
-				_clipName = DisplayObjectContainer(clip).name;
-			} else if (clip is String) {
-				_clipName = String(clip);
+			if (screenClip is DisplayObjectContainer) {
+				setClip(DisplayObjectContainer(screenClip));
+			} else if (screenClip is String) {
+				setClipName(String(screenClip));
 				if (_bundleLoaded) {
-					_clip = _bundle.getClipByName(_clipName);
+					setClip(_bundle.getClipByName(name));
 				}
 			}
 			
@@ -110,7 +109,7 @@ package com.zeitguys.mobile.app.view {
 		
 		/**
 		 * Maybe override in child classes.
-		 * The Screen's Bundle has been loaded and the MovieClip associated with this Screen has been assigned to _clip.
+		 * The Screen's Bundle has been loaded and the MovieClip associated with this Screen has been assigned to clip.
 		 * But the clip may not yet be on any stage, so don't use any reference to stage here.
 		 * 
 		 * @see #init() If you need a reference to the stage for any reason.
@@ -489,7 +488,7 @@ package com.zeitguys.mobile.app.view {
 		
 		
 		/**
-		 * Screen has been loaded and now we are sure to have a _clip. But it may not yet be added to the stage.
+		 * Screen has been loaded and now we are sure to have a clip. But it may not yet be added to the stage.
 		 * 
 		 * @see /onClipLoaded()
 		 * 
@@ -497,15 +496,15 @@ package com.zeitguys.mobile.app.view {
 		 */
 		private function onScreenLoaded():void {
 			// This is a good time to capture the original coordinates of the clip.
-			_clipOrigX = _clip.x;
-			_clipOrigY = _clip.y;
+			_clipOrigX = clip.x;
+			_clipOrigY = clip.y;
 			
 			onClipLoaded();
 			
-			if (_clip.parent) { 
+			if (clip.parent) { 
 				onAdded();
 			} else {
-				_clip.addEventListener(Event.ADDED, onAdded, false, 0, true);
+				clip.addEventListener(Event.ADDED, onAdded, false, 0, true);
 			}
 		}
 		
@@ -520,7 +519,7 @@ package com.zeitguys.mobile.app.view {
 		 */
 		private function onAdded(event:Event = null):void {
 			if (event){
-				_clip.removeEventListener(Event.ADDED, onAdded);
+				clip.removeEventListener(Event.ADDED, onAdded);
 			}
 			
 			initStage();
@@ -529,10 +528,10 @@ package com.zeitguys.mobile.app.view {
 		public function set bundle(bundle:ScreenBundle):void {
 			_bundle = bundle;
 			
-			if (null == _clip) {
-				if (_bundle.loaded && _clipName) {
-					_clip = bundle.getClipByName(_clipName);
-					if (_clip) {
+			if (hasClip) {
+				if (_bundle.loaded && name) {
+					setClip(bundle.getClipByName(name));
+					if (clip) {
 						prepare();
 					}
 				}
@@ -614,7 +613,7 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
-		 * Prepares the screen by ensuring that it has a proper _clip (once the Bundle has loaded).
+		 * Prepares the screen by ensuring that it has a proper clip (once the Bundle has loaded).
 		 * If all is ready, will fire {@link #setScreenLoaded()} which will trigger EVENT_SCREEN_LOADED
 		 */
 		public function prepare():void {
@@ -623,11 +622,11 @@ package com.zeitguys.mobile.app.view {
 					_bundleLoaded = true;
 				}
 				
-				if (_bundleLoaded && ! _clip && _clipName) {
-					_clip = _bundle.getClipByName(_clipName);
+				if (_bundleLoaded && ! hasClip && name) {
+					setClip(_bundle.getClipByName(name));
 				}
 				
-				if (_bundleLoaded && _clip){
+				if (_bundleLoaded && hasClip){
 					setScreenLoaded();
 				}
 			}
@@ -710,8 +709,8 @@ package com.zeitguys.mobile.app.view {
 			}
 			id += "__";
 			
-			if (_clipName) {
-				id += _clipName;
+			if (name) {
+				id += name;
 			} else {
 				id += "<no_clip>";
 			}

@@ -22,19 +22,21 @@ package com.zeitguys.mobile.app.view.asset
 		
 		protected var _numberFormatter:NumberFormatter;
 		
-		protected var _initialized:Boolean = false;
-		protected var _active:Boolean = false;
-		protected var _disabled:Boolean = false;
 		
 		protected var _textFieldName:String;
 		protected var _textField:TextField;
 		
+		
+		private var _initialized:Boolean = false;
+		private var _active:Boolean = false;
+		private var _disabled:Boolean = false;
+		
 		public function AssetView(assetClip:*, disabled:Boolean = false, localizableTextFieldName:String = "") {
 			if (assetClip is DisplayObject) {
-				_clipName = DisplayObject(assetClip).name;
-				clip = assetClip;
+				setClipName(DisplayObject(assetClip).name);
+				setClip(DisplayObject(assetClip));
 			} else if (assetClip is String) {
-				_clipName = assetClip;
+				setClipName(assetClip);
 			} else {
 				throw new ArgumentError("Constructor argument 'clip' must be a DisplayObject instance name (String) or an actual DisplayObject instance");
 			}
@@ -54,15 +56,15 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * This may happen only once, event if the assets is accessed multiple times.
 		 * 
-		 * @usedby set clip() Once we actually have a clip (either because a DisplayObject was passed in the constructor, or the clip has been set by the parent asset/screen).
+		 * @usedby setClip() Once we actually have a clip (either because a DisplayObject was passed in the constructor, or the clip has been set by the parent asset/screen).
 		 * 
 		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
 		public function init():void {
-				
+				trace("+++++++++++++++++++INIT", name);
 			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
 			if (_disabled) {
-				trace("  / " + _clipName + " starting DISABLED");
+				trace("  / " + name + " starting DISABLED");
 				onDisabled();
 			}
 		}
@@ -154,12 +156,12 @@ package com.zeitguys.mobile.app.view.asset
 					
 					_active = true;
 					
-					trace("  + " + _clipName + " ACTIVATED");
+					trace("  + " + name + " ACTIVATED");
 				} else {
-					trace("  + " + _clipName + " NOT activated (disabled)");
+					trace("  + " + name + " NOT activated (disabled)");
 				}
 			} else {
-				trace("  + " + _clipName + " SKIPPING activation");
+				trace("  + " + name + " SKIPPING activation");
 			}
 		}
 		
@@ -176,9 +178,9 @@ package com.zeitguys.mobile.app.view.asset
 				}	
 				_active = false;
 				
-				trace("  - " + _clipName + " DEACTIVATED");
+				trace("  - " + name + " DEACTIVATED");
 			} else {
-				trace("  - " + _clipName + " SKIPPING deactivation");
+				trace("  - " + name + " SKIPPING deactivation");
 			}
 		}
 		
@@ -227,22 +229,20 @@ package com.zeitguys.mobile.app.view.asset
 		}
 		
 		public function show(enable:Boolean = true):void {
-			if (enable && _disabled) {
-				this.enable(); // WHY do we need 'this' here???
+			if (enable) {
+				this.enable();
 			}
 			
-			if (_clip) {
-				_clip.visible = true;
+			if (clip) {
+				clip.visible = true;
 			}
 		}
 		
-		public function hide(disable:Boolean = true):void {
-			if (disable && ! _disabled) {
-				this.disable();
-			}
+		public function hide():void {
+			disable();
 			
-			if (_clip) {
-				_clip.visible = false;
+			if (clip) {
+				clip.visible = false;
 			}
 		}
 		
@@ -258,13 +258,17 @@ package com.zeitguys.mobile.app.view.asset
 			return ! _disabled;
 		}
 		
+		public function get isDisabled():Boolean {
+			return _disabled;
+		}
+		
 		/**
 		 * Shortcut to make for easier reading `activate()` overrides.
 		 * 
 		 * Child classes should test against `activatable()` before performing any
 		 * activate activities such as adding event listeners.
 		 */
-		public function get activatable():Boolean {
+		public function get isActivatable():Boolean {
 			return !_active && !_disabled;
 		}
 		
@@ -272,8 +276,8 @@ package com.zeitguys.mobile.app.view.asset
 		 * Convenience getter. Child classes can test against this as a best practice
 		 * before performing any `deactivate()` tasks, just to avoid doing redundant work.
 		 */
-		public function get deactivatable():Boolean {
-			return _active;
+		public function get isDeactivatable():Boolean {
+			return isActive;
 		}
 		
 		
@@ -285,18 +289,7 @@ package com.zeitguys.mobile.app.view.asset
 		}
 		
 		
-		/**
-		 * Associate the appropriate DisplayObject with this asset, based on the clipName that was passed in the constructor.
-		 * 
-		 * @return
-		 */
-		protected function findClip(parentClip:DisplayObjectContainer):Boolean {
-			if (! _clip){
-				clip = getRequiredChildByName(_clipName, null, parentClip);
-			}
-			
-			return true;
-		}
+		
 		
 		/**
 		 * Sets the DisplayObject that this Asset is associated with. This is generally
@@ -306,20 +299,20 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * @uses init() if the clip has not yet been initialized, will call {@link init()}, to kick off asset definition.
 		 */
-		override public function set clip(clipDisplayObject:DisplayObject):void {
-			super.clip = clipDisplayObject;
+		override protected function setClip(clipDisplayObject:DisplayObject):void {
+			super.setClip(clipDisplayObject);
 			
-			if (_textFieldName && _clipName !== _textFieldName && clip is DisplayObjectContainer) {
-				_textField = TextField(getRequiredChildByName(_textFieldName, TextField, DisplayObjectContainer(_clip)));
+			if (_textFieldName && name !== _textFieldName && clip is DisplayObjectContainer) {
+				_textField = TextField(getRequiredChildByName(_textFieldName, TextField, DisplayObjectContainer(clip)));
 			} else {
-				if (_clip is TextField) {
-					_textField = TextField(_clip);
+				if (clip is TextField) {
+					_textField = TextField(clip);
 				}
 			}
 			
 			// Store the clip's original coords.
-			_clipOrigX = _clip.x;
-			_clipOrigY = _clip.y;
+			_clipOrigX = clip.x;
+			_clipOrigY = clip.y;
 			
 			if (! _initialized) {
 				init();
@@ -333,6 +326,7 @@ package com.zeitguys.mobile.app.view.asset
 		
 		public function set screen(parentScreen:ScreenView):void {
 			_parentScreen = parentScreen;
+			setClip(getRequiredChildByName(name, DisplayObject, DisplayObjectContainer(parentScreen.clip)));
 		}
 		
 		/**
@@ -371,9 +365,9 @@ package com.zeitguys.mobile.app.view.asset
 		public function set parentAsset(asset:AssetView):void {
 			_parentAsset = asset;
 			
-			if (! _clip) {
+			if (! clip) {
 				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
-					clip = _parentAsset.getRequiredChildByName(_clipName);
+					setClip(parentAsset.getRequiredChildByName(name));
 				} else {
 					throw new IllegalOperationError("Attempting to set parentAsset, but the parentAsset's clip has not yet been set.");
 				}

@@ -29,12 +29,13 @@ package com.zeitguys.mobile.app.view {
 		 */
 		public var textVariables:Object = { };
 		
-		protected var _clip:DisplayObject;
-		protected var _clipName:String;
 		protected var _clipOrigX:Number;
 		protected var _clipOrigY:Number;
 		
-		protected static var __app:AppBase;
+		private var _clip:DisplayObject;
+		private var _clipName:String;
+		
+		private static var __app:AppBase;
 		
 		
 		public function ViewBase(clip:DisplayObject = null) {
@@ -44,8 +45,9 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
-		public function set clip(clipDisplayObject:DisplayObject):void {
+		protected function setClip(clipDisplayObject:DisplayObject):void {
 			_clip = clipDisplayObject;
+			_clipName = _clip.name;
 		}
 		
 		public function get clip():DisplayObject {
@@ -198,9 +200,8 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
-		public function get clipName():String {
-			trace("Deprecated: `ViewBase.get clipName()`. Use `ViewBase.get name()` instead.");
-			return _clipName;
+		protected function setClipName(clipName:String):void {
+			_clipName = clipName;
 		}
 		
 		public function get name():String {
