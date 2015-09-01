@@ -1,6 +1,7 @@
 package com.zeitguys.mobile.app.model {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.controller.ScreenRouter;
+	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import com.zeitguys.mobile.app.view.ScreenView;
@@ -193,7 +194,7 @@ package com.zeitguys.mobile.app.model {
 					}
 				}
 				
-				throw new ReferenceError("Clip '" + clipName + "' not found in Bundle '" + id + "'.");
+				throw new FlashConstructionError("Clip '" + clipName + "' not found in Bundle '" + id + "'.");
 			} else {
 				throw new Error("Attempting to access unloaded ScreenBundle");
 			}
