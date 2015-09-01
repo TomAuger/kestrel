@@ -1,7 +1,6 @@
 package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.view.asset.AssetView;
-	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import com.zeitguys.util.ClipUtils;
 	import com.zeitguys.util.TextUtils;
 	import flash.display.DisplayObject;
@@ -263,8 +262,8 @@ package com.zeitguys.mobile.app.view {
 			return _asset;
 		}
 		
-		public function get screenAsset():ScreenAssetView {
-			return _asset as ScreenAssetView;
+		public function get screenAsset():AssetView {
+			return _asset as AssetView;
 		}
 		
 		/**
