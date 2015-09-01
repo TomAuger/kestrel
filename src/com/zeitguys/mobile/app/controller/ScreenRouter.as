@@ -109,10 +109,6 @@ package com.zeitguys.mobile.app.controller {
 				// If a resetView was requested, turn it on.
 				// The App or screens can query this to determine whether they want to reset their view / model.
 				_currentScreenResetRequested = resetView;
-			
-				// Run setup() every time, before localize()
-				// NOTE: This is DEPRECATED!
-				newScreen.setup();
 				
 				// Set args on the incoming screen, usually passed from the setScreen() method.
 				newScreen.screenArgs = screenArgs;
