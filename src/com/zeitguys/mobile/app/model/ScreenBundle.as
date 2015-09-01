@@ -194,7 +194,7 @@ package com.zeitguys.mobile.app.model {
 					}
 				}
 				
-				throw new FlashConstructionError("Clip '" + clipName + "' not found in Bundle '" + id + "'.");
+				throw new FlashConstructionError(_swf.name, clipName, "Cannot find Screen clip '" + clipName + "' in ScreenBundle '" + id + "'");
 			} else {
 				throw new Error("Attempting to access unloaded ScreenBundle");
 			}
