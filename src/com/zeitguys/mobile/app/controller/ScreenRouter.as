@@ -1,13 +1,19 @@
 package com.zeitguys.mobile.app.controller {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.view.ScreenView;
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import com.zeitguys.mobile.app.model.ScreenBundle;
+	import com.zeitguys.mobile.app.model.IScreenList;
+	import com.zeitguys.mobile.app.model.AssetLoader;
+	import com.zeitguys.mobile.app.model.ScreenBundleLoaderAsset;
+	
 	/**
 	 * Singleton.
 	 * 
-	 * This is the model for the overall application flow. It should not contain any business logic about specific screens, but just what screen we're on,
-	 * what our history is (in case we have "Back button" functionality, and the complete list of all screens in the app.
+	 * This is the controller for the overall application flow. It should not contain any business logic about specific screens, but just what screen we're on,
+	 * what our history is (in case we have "Back button" functionality), and the complete list of all screens in the app.
 	 * 
 	 * It also does not know anything about __how__ the screens are going to be displayed. It does not have a reference to any DisplayList and doesn't know about the TransitionManager.
 	 * 
@@ -30,17 +36,15 @@ package com.zeitguys.mobile.app.controller {
 		
 		protected var _bundlesLoaded:Boolean = false;
 		
-		protected var _loader:AssetLoader = AssetLoader.getInstance();
-		
 		private static var __instance:ScreenRouter;
 		
 		/**
 		 * Singleton access to model.
 		 * @return The singleton instance.
 		 */
-		public static function getInstance():ScreenRouter {
+		public static function getInstance(app:AppBase = null):ScreenRouter {
 			if (! __instance) {
-				__instance = new ScreenRouter();
+				__instance = new ScreenRouter(app);
 			}
 			
 			return __instance;
@@ -223,15 +227,20 @@ package com.zeitguys.mobile.app.controller {
 		}
 		
 		/**
-		 * Constructor.
+		 * Constructor. Shouldn't be called directly. Use getInstance();
 		 */
-		public function ScreenRouter() {
-		
+		public function ScreenRouter(app:AppBase) {
+			if (__instance) {
+				throw new IllegalOperationError("ScreenRouter is a Singleton. Use ScreenRouter.getInstance(), or obtain a reference from AppBase.router");
+			}
+			
+			_app = app;
+			__instance = this;
 		}
 		
 		/**
 		 * Process the ScreenList, which defines the Bundles and all the Screens in each Bundle.
-		 * This will also enqueue them into the AssetLoader, which may start the loader if it's not already loading something.
+		 * This will also enqueue them into the AssetLoader, which may start the assetLoader if it's not already loading something.
 		 * 
 		 * Note: there can be sequencing issues if you're not careful: the ScreenList already instantiates the ScreenBundles and ScreenViews,
 		 * but they're not necessarily even loaded so may not yet have their assets. Look to {@link ScreenView} to see the list of hooks you have access to
@@ -247,7 +256,7 @@ package com.zeitguys.mobile.app.controller {
 				if (! bundle.loaded) {
 					var asset:ScreenBundleLoaderAsset = new ScreenBundleLoaderAsset(bundle.request, bundle, onBundleLoadComplete, onBundleLoadError);
 					
-					_loader.addItem(asset);
+					assetLoader.addItem(asset);
 				}
 			}
 			
@@ -262,16 +271,12 @@ package com.zeitguys.mobile.app.controller {
 			trace("Bundle Load Error: " + error);
 		}
 		
-		public function set app(app:AppBase):void {
-			_app = app;
-		}
-		
-		public function get app():AppBase {
+		protected function get app():AppBase {
 			return _app;
 		}
 		
-		public function get loader():AssetLoader {
-			return _loader;
+		protected function get assetLoader():AssetLoader {
+			return app.assetLoader;
 		}
 		
 		public function get bundlesLoaded():Boolean {
