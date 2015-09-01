@@ -1,4 +1,4 @@
-package com.zeitguys.mobile.app.model {
+package com.zeitguys.mobile.app.controller {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.view.ScreenView;
 	import flash.events.Event;

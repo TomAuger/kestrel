@@ -7,7 +7,7 @@ package com.zeitguys.mobile.app {
 	import com.zeitguys.mobile.app.view.transition.TransitionBase;
 	import com.zeitguys.mobile.app.view.ViewBase;
 	import com.zeitguys.mobile.app.model.AppConfigModel;
-	import com.zeitguys.mobile.app.model.ScreenRouter;
+	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.IScreenList;
 	import com.zeitguys.mobile.app.model.Localizer;

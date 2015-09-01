@@ -1,6 +1,6 @@
 package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.AppBase;
-	import com.zeitguys.mobile.app.model.ScreenRouter;
+	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.Localizer;
 	import com.zeitguys.mobile.app.model.ScreenBundle;

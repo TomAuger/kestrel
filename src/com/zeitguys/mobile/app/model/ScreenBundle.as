@@ -1,5 +1,6 @@
 package com.zeitguys.mobile.app.model {
 	import com.zeitguys.mobile.app.AppBase;
+	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import com.zeitguys.mobile.app.view.ScreenView;
