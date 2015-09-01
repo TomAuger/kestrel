@@ -226,7 +226,7 @@ package com.zeitguys.mobile.app.model {
 		
 		
 		protected function set language(languageCode:String) {
-			if (languageCode != currentLanguage) {
+			if (languageCode != _currentLanguageCode) {
 				_currentLanguageCode = languageCode;
 				_localeID = new LocaleID(languageCode);
 				
