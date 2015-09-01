@@ -1,6 +1,7 @@
 package com.zeitguys.mobile.app {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.model.AssetLoader;
+	import com.zeitguys.mobile.app.model.event.AssetLoaderEvent;
 	import com.zeitguys.mobile.app.view.ActionSheetModalView;
 	import com.zeitguys.mobile.app.view.ModalFactory;
 	import com.zeitguys.mobile.app.view.ModalView;
@@ -13,6 +14,7 @@ package com.zeitguys.mobile.app {
 	import com.zeitguys.mobile.app.model.Localizer;
 	import com.zeitguys.mobile.app.view.transition.TransitionManagerBase;
 	import com.zeitguys.util.ClipUtils;
+	import com.zeitguys.util.DebugUtils;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
@@ -81,6 +83,7 @@ package com.zeitguys.mobile.app {
 		private var _inTransition:Boolean = false;
 		
 		private var _transitionManager:TransitionManagerBase;
+		private var _assetLoader:AssetLoader;
 		
 		
 		
@@ -94,21 +97,7 @@ package com.zeitguys.mobile.app {
 			
 			stopAllMovieClips();
 			
-			_screenRouter = ScreenRouter.getInstance();
-			_screenRouter.app = this;
-			
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
-		}
-		
-		/**
-		 * App base classes that inherit from AppBase can override this to hook into the initialization and do other
-		 * things that should be done after the app has been added to the stage, but before the app is ready.
-		 * 
-		 * Endpoint child classes should avoid touching this altogether and use {@link /initialize()} instead.
-		 */
-		protected function init():void {
-			// Register this app with ViewBase, so all Views get access to an `app` getter for convenience.
-			ViewBase.setApp(this);
 		}
 		
 		
@@ -123,6 +112,15 @@ package com.zeitguys.mobile.app {
 			//localizer = new Localizer()
 			//screenList = IScreenList
 			//firstScreen = "screen__id"
+		}
+		
+		
+		protected function onAppLoaded(event:AssetLoaderEvent = null):void {
+			if (event){
+				trace("Initial app assets loaded!");
+				DebugUtils.print_r(event);
+			}
+			trace("App Loaded!");
 		}
 		
 		/**
@@ -152,7 +150,7 @@ package com.zeitguys.mobile.app {
 		
 		
 		/**
-		 * Handles all pre-initialization of app. Calls {@link /appReady()} after config file has loaded.
+		 * Handles all pre-initialization of app. Calls {@link /onConfigLoaded()} after config file has loaded.
 		 * @param	event
 		 */
 		protected function onAddedToStage(event:Event):void {
@@ -177,11 +175,33 @@ package com.zeitguys.mobile.app {
 			
 			init();
 			
-			if (!_appConfig) {
+			if (! _appConfig) {
 				_appConfig = new AppConfigModel(_appConfigFileURL);
 			}
-			_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, appReady);
+			_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
 			_appConfig.load();
+		}
+		
+		/**
+		 * AppBase subclasses can override this to hook into the initialization and do other
+		 * things that should be done after the app has been added to the stage, but before the app is ready.
+		 * 
+		 * Endpoint child classes should avoid touching this altogether and use {@link /initialize()} instead.
+		 */
+		protected function init():void {
+			// Register this app with ViewBase, so all Views get access to an `app` getter for convenience.
+			ViewBase.setApp(this);
+			
+			// Get our ScreenRouter instance, which is used by the App to define the screen flow, switch
+			// screens, maintain screen history and possibly work with the TransitionManager to transition between screens.
+			_screenRouter = ScreenRouter.getInstance(this);
+			
+			// Get our AssetLoader instance, which is used by the Localizer, Router, and possibly your Screens
+			// to queue and load assets (XML, CSS, images, sourds, etc).
+			_assetLoader = AssetLoader.getInstance();
+			// If we prepare a bunch of assets to be loaded using the AssetLoader during `initialize()`, we can
+			// listen for the AssetLoader to be done loading all assets, and then start our app onAppLoaded().
+			_assetLoader.addEventListener(AssetLoaderEvent.LOADING_COMPLETE, onAppLoaded);
 		}
 		
 		/**
@@ -282,14 +302,23 @@ package com.zeitguys.mobile.app {
 			return _deviceSize.height;
 		}
 		
+		public function get assetLoader():AssetLoader {
+			return _assetLoader;
+		}
+		
+		
+		
+		
+		
+		
 		
 		/**
 		 * The app has been added to the stage and the config file is loaded. The app is ready to start loading screens and logic.
 		 * 
 		 * @param	event
 		 */
-		protected function appReady(event:Event):void {
-			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, appReady);
+		protected function onConfigLoaded(event:Event):void {
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
 			
 			appState = APP_STATE_READY;
 			
@@ -298,6 +327,10 @@ package com.zeitguys.mobile.app {
 			trace("App Initializing\n------------------------------------------------");
 			
 			initialize();
+			
+			if (assetLoader.complete) {
+				onAppLoaded();
+			}
 		}
 		
 		/**
@@ -315,7 +348,9 @@ package com.zeitguys.mobile.app {
 		/**
 		 * This function initializes the resume delay timer if one is needed.
 		 */
-		protected function beginResumeApp( event:Event ):void {
+		protected function beginResumeApp(event:Event):void {
+			// In the simulator, this event is fired (don't know why), so we check first
+			// to make sure that the app actually has a state that we would be resuming from.
 			if (appState == APP_STATE_DEACTIVATED || appState == APP_STATE_PAUSED || appState == APP_STATE_SUSPENDING){
 				trace( "BEGINNING RESUME APP." );
 				// Make sure we stop our sleep counter
@@ -327,8 +362,6 @@ package com.zeitguys.mobile.app {
 				} else {
 					resumeApp();
 				}
-			} else {
-				trace( "FALSE 'resume app' APP STATE event sent - ignoring. Are you Debugging in simulator? " );
 			}
 		}
 		
