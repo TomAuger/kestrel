@@ -327,31 +327,12 @@ package com.zeitguys.mobile.app.view.asset
 			}
 		}
 		
-		/**
-		 * Sets the parent AssetView, and if the clip has been deferred (such as when the AssetView is instantiated
-		 * with just the instance name of the clip, instead of the actual clip), then will attempt to set the clip
-		 * by searching through the parentAsset's clip's display hierarchy.
-		 */
-		public function set parentAsset(asset:AssetView):void {
-			_parentAsset = asset;
-			
-			if (! _clip) {
-				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
-					clip = _parentAsset.getRequiredChildByName(_clipName);
-				} else {
-					throw new IllegalOperationError("Setting parentAsset, but the parentAsset's clip has not yet been set.");
-				}
-			}
-			
-			_parentScreen = _parentAsset.screen;
-		}
-		
-		public function get parentAsset():AssetView {
-			return _parentAsset;
-		}
-		
 		public function get screen():ScreenView {
 			return _parentScreen;
+		}
+		
+		public function set screen(parentScreen:ScreenView):void {
+			_parentScreen = parentScreen;
 		}
 		
 		/**
@@ -368,6 +349,7 @@ package com.zeitguys.mobile.app.view.asset
 				child = this;
 			}
 			
+			// Is this screen a direct child of a ScreenView?
 			if (child.screen) {
 				_parentScreen = child.screen;
 				return child.screen;
@@ -378,6 +360,30 @@ package com.zeitguys.mobile.app.view.asset
 			}
 			
 			return null;
+		}
+		
+		
+		/**
+		 * Sets the parent AssetView, and if the clip has been deferred (such as when the AssetView is instantiated
+		 * with just the instance name of the clip, instead of the actual clip), then will attempt to set the clip
+		 * by searching through the parentAsset's clip's display hierarchy.
+		 */
+		public function set parentAsset(asset:AssetView):void {
+			_parentAsset = asset;
+			
+			if (! _clip) {
+				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
+					clip = _parentAsset.getRequiredChildByName(_clipName);
+				} else {
+					throw new IllegalOperationError("Attempting to set parentAsset, but the parentAsset's clip has not yet been set.");
+				}
+			}
+			
+			screen = _parentAsset.screen;
+		}
+		
+		public function get parentAsset():AssetView {
+			return _parentAsset;
 		}
 		
 		
