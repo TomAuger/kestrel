@@ -396,8 +396,6 @@ package com.zeitguys.mobile.app.view.asset
 					childAsset.localize(localizer);
 				}
 			}
-			
-			super.localize(localizer);
 		}
 		
 		/**
