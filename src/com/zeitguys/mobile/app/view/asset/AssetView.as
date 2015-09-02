@@ -195,13 +195,13 @@ package com.zeitguys.mobile.app.view.asset
 				
 				onDisabled();
 				
-				trace("  - " + id + " DISABLED");
+				trace("  - " + name + " DISABLED");
 				
 				if (_active) {
 					deactivate();
 				}
 			} else {
-				trace("  - " + id + " DISABLE skipped (already disabled)");
+				trace("  - " + name + " DISABLE skipped (already disabled)");
 			}
 		}
 		
@@ -217,13 +217,13 @@ package com.zeitguys.mobile.app.view.asset
 				
 				onEnabled();
 				
-				trace("  + " + id + " ENABLED");
+				trace("  + " + name + " ENABLED");
 				
 				if (! _active) {
 					activate();
 				}
 			} else {
-				trace("  + " + id + " ENABLE skipped (already enabled)");
+				trace("  + " + name + " ENABLE skipped (already enabled)");
 			}
 		}
 		
@@ -383,7 +383,7 @@ package com.zeitguys.mobile.app.view.asset
 		
 		
 		override public function localize(localizer:Localizer):void {
-			trace("  Localizing Asset '" + id + "'");
+			trace("  Localizing Asset '" + name + "'");
 			
 			_numberFormatter = localizer.numberFormatter;
 			
@@ -416,7 +416,7 @@ package com.zeitguys.mobile.app.view.asset
 			var parentScreen:ScreenView = getParentScreen(this);
 			
 			if (parentScreen){
-				return localizer.getAssetComponentText(parentScreen.bundle.id, parentScreen.name, id, component, componentID);
+				return localizer.getAssetComponentText(parentScreen.bundle.id, parentScreen.name, name, component, componentID);
 			} else {
 				throw new IllegalOperationError("Calling getAssetComponentText() on an asset that is not attached to any screen.");
 			}

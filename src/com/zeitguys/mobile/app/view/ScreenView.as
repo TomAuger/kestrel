@@ -717,7 +717,7 @@
 		/**
 		 * The ID of the screen is a concatenation of its bundle and its clipname, eg: main__home
 		 */
-		override public function get id():String {
+		public function get id():String {
 			return _id;
 		}		
 		

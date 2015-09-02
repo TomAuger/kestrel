@@ -66,6 +66,14 @@ package com.zeitguys.mobile.app.view {
 			return false;
 		}
 		
+		protected function setClipName(clipName:String):void {
+			_clipName = clipName;
+		}
+		
+		public function get name():String {
+			return _clipName;
+		}
+		
 		/**
 		 * Convenience method. Casts the clip as a MovieClip if it can. 
 		 */
@@ -83,10 +91,6 @@ package com.zeitguys.mobile.app.view {
 			}
 			
 			return null;
-		}
-	
-		public function get id():String {
-			return _clipName;
 		}
 		
 		public static function setApp(app:AppBase):void {
@@ -198,14 +202,6 @@ package com.zeitguys.mobile.app.view {
 			} else {
 				trace("ViewBase.setText() WARNING: Could not find appropriate TextField (" + textField.name + ") in " + _clipName + ".");
 			}
-		}
-		
-		protected function setClipName(clipName:String):void {
-			_clipName = clipName;
-		}
-		
-		public function get name():String {
-			return _clipName;
 		}
 		
 		
