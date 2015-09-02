@@ -70,8 +70,8 @@ package com.zeitguys.mobile.app.view {
 		 * Convenience method. Casts the clip as a MovieClip if it can. 
 		 */
 		public function get movieClip():MovieClip {
-			if (clip && clip is MovieClip) {
-				return clip as MovieClip;
+			if (hasClip && clip is MovieClip) {
+				return MovieClip(clip);
 			}
 			
 			return null;
