@@ -365,7 +365,7 @@ package com.zeitguys.mobile.app.view.asset
 		public function set parentAsset(asset:AssetView):void {
 			_parentAsset = asset;
 			
-			if (! clip) {
+			if (! hasClip) {
 				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
 					setClip(parentAsset.getRequiredChildByName(name));
 				} else {
