@@ -99,7 +99,7 @@
 					screenArgs = { };
 				}
 				
-				trace("---------------------------------------------\nSetting SCREEN to: " + newScreen.id);
+				trace("======================================\nSetting SCREEN to: " + newScreen.id);
 				_screenHistory[_screenHistoryIndex] = newScreen;
 				
 				//debugHistory();

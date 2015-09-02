@@ -61,7 +61,6 @@ package com.zeitguys.mobile.app.view.asset
 		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
 		public function init():void {
-				trace("+++++++++++++++++++INIT", name);
 			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
 			if (_disabled) {
 				trace("  / " + name + " starting DISABLED");

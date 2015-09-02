@@ -261,6 +261,8 @@ package com.zeitguys.mobile.app.model {
 			
 			// Any items in the queue for this language code? If so, process 'em!
 			if (_localizationQueue[languageCode] && _localizationQueue[languageCode].length) {
+				trace("Processing localization BACKLOG...");
+				
 				while (_localizationQueue[languageCode].length) {
 					var item:ILocalizable = ILocalizable(_localizationQueue[languageCode].shift());
 					item.localize(this);
