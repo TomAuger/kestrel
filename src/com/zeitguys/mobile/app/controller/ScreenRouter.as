@@ -179,18 +179,44 @@
 		/**
 		 * Rewind to the first screen in the ScreenBundle. The default behaviour is to reset the previous screen.
 		 * 
+		 * @param	bundle Optional. The ScreenBundle we want to switch to. If not provided, will attempt to get the first screen of the current screen's bundle.
 		 * @param	resetView
 		 * @param	triggerEvent
-		 * @return
+		 * @return	screen ID or null
 		 */
-		public function firstScreenInBundle(resetView:Boolean = true, triggerEvent:Boolean = true, args:Object = null):String {
-			if (currentScreen) {
-				var firstScreen:ScreenView = currentScreen.bundle.getScreenByIndex(0);
-				if (firstScreen) {
-					return setScreen(firstScreen, resetView, triggerEvent, args);
+		public function firstScreenInBundle(bundle:* = null, resetView:Boolean = true, triggerEvent:Boolean = true, args:Object = null):String {
+			var firstScreen:ScreenView;
+			var screenBundle:ScreenBundle;
+			
+			if (bundle) {
+				if (bundle is ScreenBundle) {
+					screenBundle = ScreenBundle(bundle);
+				} else if (bundle is String) {
+					screenBundle = getBundle(bundle);
+				}
+				
+				if (screenBundle){
+					firstScreen = screenBundle.getScreenByIndex(0);
+				} else {
+					throw new ArgumentError("Argument 'bundle' must be either a ScreenBundle or a ScreenBundle ID (String).");
+				}
+			} else {
+				if (currentScreen) {
+					firstScreen = currentBundle.getScreenByIndex(0);
 				}
 			}
+			
+			if (firstScreen) {
+				return setScreen(firstScreen, resetView, triggerEvent, args);
+			} else {
+				throw new Error("Could not determine FirstScreen.");
+			}
+			
 			return null;
+		}
+		
+		public function getBundle(bundleID:String):ScreenBundle {
+			return ScreenBundle.getBundleByID(bundleID);
 		}
 		
 		public function getScreenByID(screenID:String, bundle:ScreenBundle = null):ScreenView {
@@ -198,7 +224,7 @@
 			if (! bundle) {
 				var idParts:Array = screenID.split("__", 2);
 				if (idParts.length == 2){
-					bundle = ScreenBundle.getBundleByID(idParts[0]);
+					bundle = getBundle(idParts[0]);
 				} else {
 					bundle = currentScreen.bundle;
 				}
