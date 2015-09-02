@@ -373,7 +373,9 @@ package com.zeitguys.mobile.app.view.asset
 				}
 			}
 			
-			screen = _parentAsset.screen;
+			if (_parentAsset.screen) {
+				screen = _parentAsset.screen;
+			}
 		}
 		
 		public function get parentAsset():AssetView {
