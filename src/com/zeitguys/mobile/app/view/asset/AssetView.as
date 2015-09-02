@@ -383,7 +383,7 @@ package com.zeitguys.mobile.app.view.asset
 		
 		
 		override public function localize(localizer:Localizer):void {
-			trace("Localizing Asset '" + id + "'");
+			trace("  Localizing Asset '" + id + "'");
 			
 			_numberFormatter = localizer.numberFormatter;
 			

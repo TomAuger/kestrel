@@ -548,8 +548,6 @@ package com.zeitguys.mobile.app {
 		
 		public function set inTransition(transitioning:Boolean):void {
 			_inTransition = transitioning;
-			
-			trace("APP TRANSITION STATE:", _inTransition);
 		}
 		
 		//****************************************************************************--------

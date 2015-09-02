@@ -153,7 +153,7 @@
 		 * @TODO: refactor to work with all AssetViews not just ScreenAssetViews.
 		 */
 		public function setupBeforeLocalize():void {
-			trace(id + " SETTING UP (before localization)");
+			trace("--------------------------------------\n" + id + " SETTING UP (before localization)");
 			
 			for each (var asset:AssetView in _assets) {
 				asset.setupBeforeLocalize();
@@ -165,7 +165,7 @@
 		 * items as well. Just remember to call super.localize() as well!
 		 */
 		override public function localize(localizer:Localizer):void {
-			trace("Localizing Screen '" + id + "'");
+			trace("LOCALIZING Screen '" + id + "'");
 			
 			var modalID:String,
 				item:Object,
@@ -223,11 +223,11 @@
 		 * This is where you should do things like initialize the screen's model, and perform set-ups that should happen every time the screen is displayed.
 		 */
 		public function setupAfterLocalize():void {
-			trace(id + " SETTING UP (after localization)");
-			
 			for each (var asset:AssetView in _assets) {
 				asset.setupAfterLocalize();
 			}
+			
+			trace(id + " SETUP (after localization) COMPLETE\n--------------------------------------");
 		}
 		
 		/**
