@@ -43,7 +43,7 @@ package com.zeitguys.mobile.app.model
 		 * @return
 		 */
 		protected function getLocal(key:String, required:Boolean = false):* {
-			LocalStorage.fetch(key, required, LOCAL_STORAGE_ID);
+			return LocalStorage.fetch(key, required, LOCAL_STORAGE_ID);
 		}
 		
 		/**
