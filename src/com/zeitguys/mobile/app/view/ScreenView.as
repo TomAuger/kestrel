@@ -545,11 +545,7 @@
 		}
 		
 		public function get router():ScreenRouter {
-			if (! _screenRouter) {
-				_screenRouter = ScreenRouter.getInstance();
-			}
-			
-			return _screenRouter;
+			return app.router;
 		}
 		
 		/**
