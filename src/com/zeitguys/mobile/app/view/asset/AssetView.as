@@ -61,11 +61,32 @@ package com.zeitguys.mobile.app.view.asset
 		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
 		public function init():void {
+			
 			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
 			if (_disabled) {
 				trace("  / " + name + " starting DISABLED");
 				onDisabled();
 			}
+		}
+		
+		
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is disabled.
+		 */
+		protected function onDisabled() {
+			
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is (re-)enabled
+		 */
+		protected function onEnabled() {
+			
 		}
 		
 		/**
@@ -76,6 +97,27 @@ package com.zeitguys.mobile.app.view.asset
 		public function setupBeforeLocalize():void {
 			for each (var asset:AssetView in _childAssets) {
 				asset.setupBeforeLocalize();
+			}
+		}
+		
+		
+		override public function localize(localizer:Localizer):void {
+			trace("  Localizing Asset '" + name + "'");
+			
+			_numberFormatter = localizer.numberFormatter;
+			
+			if (_textFieldName && _textField) {
+				if (setText(_textField, getAssetComponentText(localizer, _textFieldName))) {
+					trace("    Localized Field '" + _textFieldName + "'");
+				} else {
+					trace("    Could not localize Field '" + _textFieldName + "'");
+				}
+			}
+			
+			if (_childAssets.length) {
+				for each (var childAsset:AssetView in _childAssets) {
+					childAsset.localize(localizer);
+				}
 			}
 		}
 		
@@ -106,24 +148,6 @@ package com.zeitguys.mobile.app.view.asset
 			for each (var asset:AssetView in _childAssets) {
 				asset.reset();
 			}
-		}
-		
-		/**
-		 * Override in child classes.
-		 * 
-		 * Updates the visual style of the asset when it is disabled.
-		 */
-		protected function onDisabled() {
-			
-		}
-		
-		/**
-		 * Override in child classes.
-		 * 
-		 * Updates the visual style of the asset when it is (re-)enabled
-		 */
-		protected function onEnabled() {
-			
 		}
 		
 		
@@ -379,23 +403,6 @@ package com.zeitguys.mobile.app.view.asset
 		
 		public function get parentAsset():AssetView {
 			return _parentAsset;
-		}
-		
-		
-		override public function localize(localizer:Localizer):void {
-			trace("  Localizing Asset '" + name + "'");
-			
-			_numberFormatter = localizer.numberFormatter;
-			
-			if (_textFieldName && _textField) {
-				setText(_textField, getAssetComponentText(localizer, _textFieldName));
-			}
-			
-			if (_childAssets.length) {
-				for each (var childAsset:AssetView in _childAssets) {
-					childAsset.localize(localizer);
-				}
-			}
 		}
 		
 		/**
