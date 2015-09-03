@@ -34,7 +34,7 @@ package com.zeitguys.mobile.app.view.asset
 		public function AssetView(assetClip:*, disabled:Boolean = false, localizableTextFieldName:String = "") {
 			if (assetClip is DisplayObject) {
 				setClipName(DisplayObject(assetClip).name);
-				setClip(DisplayObject(assetClip));
+				_setClip(DisplayObject(assetClip));
 			} else if (assetClip is String) {
 				setClipName(assetClip);
 			} else {
@@ -56,7 +56,7 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * This may happen only once, event if the assets is accessed multiple times.
 		 * 
-		 * @usedby setClip() Once we actually have a clip (either because a DisplayObject was passed in the constructor, or the clip has been set by the parent asset/screen).
+		 * @usedby _setClip() Once we actually have a clip (either because a DisplayObject was passed in the constructor, or the clip has been set by the parent asset/screen).
 		 * 
 		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
@@ -322,8 +322,8 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * @uses init() if the clip has not yet been initialized, will call {@link init()}, to kick off asset definition.
 		 */
-		override protected function setClip(clipDisplayObject:DisplayObject):void {
-			super.setClip(clipDisplayObject);
+		override protected function _setClip(clipDisplayObject:DisplayObject):void {
+			super._setClip(clipDisplayObject);
 			
 			if (_textFieldName && name !== _textFieldName && clip is DisplayObjectContainer) {
 				_textField = TextField(getRequiredChildByName(_textFieldName, TextField, DisplayObjectContainer(clip)));
@@ -349,7 +349,7 @@ package com.zeitguys.mobile.app.view.asset
 		
 		public function set screen(parentScreen:ScreenView):void {
 			_parentScreen = parentScreen;
-			setClip(getRequiredChildByName(name, DisplayObject, DisplayObjectContainer(parentScreen.clip)));
+			_setClip(getRequiredChildByName(name, DisplayObject, DisplayObjectContainer(parentScreen.clip)));
 		}
 		
 		/**
@@ -390,7 +390,7 @@ package com.zeitguys.mobile.app.view.asset
 			
 			if (! hasClip) {
 				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
-					setClip(parentAsset.getRequiredChildByName(name));
+					_setClip(parentAsset.getRequiredChildByName(name));
 				} else {
 					throw new IllegalOperationError("Attempting to set parentAsset, but the parentAsset's clip has not yet been set.");
 				}

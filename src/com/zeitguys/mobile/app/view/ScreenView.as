@@ -79,11 +79,11 @@
 			}
 			
 			if (screenClip is DisplayObjectContainer) {
-				setClip(DisplayObjectContainer(screenClip));
+				_setClip(DisplayObjectContainer(screenClip));
 			} else if (screenClip is String) {
 				setClipName(String(screenClip));
 				if (_bundleLoaded) {
-					setClip(_bundle.getClipByName(name));
+					_setClip(_bundle.getClipByName(name));
 				}
 			}
 			
@@ -530,7 +530,7 @@
 			
 			if (hasClip) {
 				if (_bundle.loaded && name) {
-					setClip(bundle.getClipByName(name));
+					_setClip(bundle.getClipByName(name));
 					if (clip) {
 						prepare();
 					}
@@ -619,7 +619,7 @@
 				}
 				
 				if (_bundleLoaded && ! hasClip && name) {
-					setClip(_bundle.getClipByName(name));
+					_setClip(_bundle.getClipByName(name));
 				}
 				
 				if (_bundleLoaded && hasClip){

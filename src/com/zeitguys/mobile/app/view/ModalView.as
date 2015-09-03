@@ -451,7 +451,7 @@
 			_buttons = null;
 			_pressedButton = "";
 			
-			setClip(null);
+			_setClip(null);
 		}
 		
 		public function get buttons():Vector.<ModalButtonData> {

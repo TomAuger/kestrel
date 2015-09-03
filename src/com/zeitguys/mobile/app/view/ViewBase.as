@@ -45,7 +45,7 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
-		protected function setClip(clipDisplayObject:DisplayObject):void {
+		protected function _setClip(clipDisplayObject:DisplayObject):void {
 			_clip = clipDisplayObject;
 			_clipName = _clip.name;
 		}
