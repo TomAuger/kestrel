@@ -59,11 +59,8 @@ package com.zeitguys.mobile.app {
 		
 		public static const DEVICE_MODEL_SIMULATOR:String = "simulator";
 		
-		protected var _screenList:IScreenList; // Set this within child class constructor
 		protected var _currentScreen:ScreenView;
 		protected var _nextScreen:String;
-		
-		protected var _screenRouter:ScreenRouter;
 		
 		protected var _modalFactory:ModalFactory;
 		protected var _currentModal:ModalView;
@@ -77,12 +74,15 @@ package com.zeitguys.mobile.app {
 		protected var _resumeAppDelayFrames:uint = 0;
 		protected var _sleepFrames:uint = 0;
 		
+		
 		private var _deviceSize:Rectangle;
 		private var _osVersion:uint;
 		
 		private var _appState:String;
 		private var _inTransition:Boolean = false;
 		
+		
+		private var _screenRouter:ScreenRouter;
 		private var _transitionManager:TransitionManagerBase;
 		private var _assetLoader:AssetLoader;
 		
@@ -110,11 +110,8 @@ package com.zeitguys.mobile.app {
 		 * Endpoint child classes should avoid touching this altogether and use {@link /initialize()} instead.
 		 */
 		protected function init():void {
-			// Get our ScreenRouter instance, which is used by the App to define the screen flow, switch
-			// screens, maintain screen history and possibly work with the TransitionManager to transition between screens.
-			_screenRouter = ScreenRouter.getInstance(this);
 			// Listen for EVENT_SCREEN_CHANGED, triggered by `ScreenRouter.setScreen()`
-			_screenRouter.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
+			router.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
 			
 			// Get our AssetLoader instance, which is used by the Localizer, Router, and possibly your Screens
 			// to queue and load assets (XML, CSS, images, sourds, etc).
@@ -631,8 +628,7 @@ package com.zeitguys.mobile.app {
 		 * and TransitionManager is a child of the main SWF.
 		 */
 		public function set screenList(list:IScreenList):void {
-			_screenList = list;
-			_screenRouter.processScreenList(_screenList);
+			router.processScreenList(list);
 			
 			initializeTransitionManager();
 		}
@@ -641,6 +637,10 @@ package com.zeitguys.mobile.app {
 		 * @usedby ScreenView.get router()
 		 */
 		public function get router():ScreenRouter {
+			if (! _screenRouter) {
+				_screenRouter = ScreenRouter.getInstance();
+			}
+			
 			return _screenRouter;
 		}
 		
@@ -684,7 +684,7 @@ package com.zeitguys.mobile.app {
 			inTransition = true;
 			
 			_transitionManager.addEventListener(TransitionManagerBase.EVENT_TRANSITION_COMPLETE, onTransitionComplete);
-			_transitionManager.transition(_screenRouter.currentScreen);
+			_transitionManager.transition(router.currentScreen);
 		}
 		
 		private function onTransitionComplete(event:Event):void {
@@ -697,7 +697,7 @@ package com.zeitguys.mobile.app {
 				
 			}
 			
-			screenTransitionComplete(_screenRouter.currentScreen);
+			screenTransitionComplete(router.currentScreen);
 		}
 		
 		/**
