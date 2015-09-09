@@ -62,6 +62,11 @@ package com.zeitguys.mobile.app {
 		
 		protected var _supportsAutoOrients:Boolean = true;
 		protected var _defaultLanguageCode:String = "en_US";
+		protected var _resumeAppDelayFrames:uint = 0;
+		protected var _sleepFrames:uint = 0;
+		
+		
+		
 		
 		protected var _currentScreen:ScreenView;
 		protected var _nextScreen:String;
@@ -75,9 +80,8 @@ package com.zeitguys.mobile.app {
 		
 		protected var _theme:Object;
 		
-		protected var _resumeAppDelayFrames:uint = 0;
-		protected var _sleepFrames:uint = 0;
 		protected var localizer:Localizer;
+		protected var _screenRouter:ScreenRouter;
 		
 		
 		private var _deviceSize:Rectangle;
@@ -87,7 +91,6 @@ package com.zeitguys.mobile.app {
 		private var _inTransition:Boolean = false;
 		
 		
-		private var _screenRouter:ScreenRouter;
 		private var _transitionManager:TransitionManagerBase;
 		private var _assetLoader:AssetLoader;
 		
