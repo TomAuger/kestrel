@@ -636,7 +636,7 @@ package com.zeitguys.mobile.app {
 		 */
 		public function get router():ScreenRouter {
 			if (! _screenRouter) {
-				_screenRouter = ScreenRouter.getInstance();
+				_screenRouter = new ScreenRouter(this);
 			}
 			
 			return _screenRouter;

@@ -1,6 +1,5 @@
 package com.zeitguys.mobile.app.model {
 	import com.zeitguys.mobile.app.AppBase;
-	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -16,7 +15,6 @@ package com.zeitguys.mobile.app.model {
 		protected var _screens:Vector.<ScreenView> = new Vector.<ScreenView>();
 		protected var _swfURL:URLRequest;
 		protected var _swf:DisplayObjectContainer;
-		protected var _screenRouter:ScreenRouter = ScreenRouter.getInstance();
 		
 		protected var _loaded:Boolean = false;
 		

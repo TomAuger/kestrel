@@ -38,16 +38,19 @@
 		
 		private static var __instance:ScreenRouter;
 		
+
+		
 		/**
-		 * Singleton access to model.
-		 * @return The singleton instance.
+		 * Constructor. Shouldn't be called more than once. Quasi-singleton.
 		 */
-		public static function getInstance(app:AppBase = null):ScreenRouter {
-			if (! __instance) {
-				__instance = new ScreenRouter(app);
+		public function ScreenRouter(app:AppBase) {
+			if (__instance) {
+				trace("WARNING: Asking for a second instance of ScreenRouter. Get a reference from `AppBase.get router()` instead.");
+				throw new Error();
 			}
 			
-			return __instance;
+			_app = app;
+			__instance = this;
 		}
 		
 		/**
@@ -246,18 +249,6 @@
 		
 		public function set screenArgs(args:Object):void {
 			_screenArgs = args;
-		}
-		
-		/**
-		 * Constructor. Shouldn't be called directly. Use getInstance();
-		 */
-		public function ScreenRouter(app:AppBase) {
-			if (__instance) {
-				throw new IllegalOperationError("ScreenRouter is a Singleton. Use ScreenRouter.getInstance(), or obtain a reference from AppBase.router");
-			}
-			
-			_app = app;
-			__instance = this;
 		}
 		
 		/**
