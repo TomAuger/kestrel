@@ -35,6 +35,8 @@
 		protected var _screenArgs:Object = {};
 		
 		protected var _bundlesLoaded:Boolean = false;
+		protected var _bundles:Vector.<ScreenBundle> = new <ScreenBundle>[];
+		protected var _bundleIDs:Object = { };
 		
 		private static var __instance:ScreenRouter;
 		
@@ -195,7 +197,7 @@
 				if (bundle is ScreenBundle) {
 					screenBundle = ScreenBundle(bundle);
 				} else if (bundle is String) {
-					screenBundle = getBundle(bundle);
+					screenBundle = getBundleByID(bundle);
 				}
 				
 				if (screenBundle){
@@ -218,16 +220,12 @@
 			return null;
 		}
 		
-		public function getBundle(bundleID:String):ScreenBundle {
-			return ScreenBundle.getBundleByID(bundleID);
-		}
-		
 		public function getScreenByID(screenID:String, bundle:ScreenBundle = null):ScreenView {
 			// Extract the bundle from the screenID unless bundle provided
 			if (! bundle) {
 				var idParts:Array = screenID.split("__", 2);
 				if (idParts.length == 2){
-					bundle = getBundle(idParts[0]);
+					bundle = getBundleByID(idParts[0]);
 				} else {
 					bundle = currentScreen.bundle;
 				}
@@ -264,17 +262,63 @@
 		public function processScreenList(screenList:IScreenList):void {
 			var bundles:Vector.<ScreenBundle> = screenList.getScreenBundles();
 			
-			// Load the bundles
+			// Add each bundle to our bundle list, and if the bundle needs loading, added it to the AssetLoader queue.
 			for each (var bundle:ScreenBundle in bundles) {
+				addBundle(bundle);
+				
 				if (! bundle.loaded) {
-					var asset:ScreenBundleLoaderAsset = new ScreenBundleLoaderAsset(bundle.request, bundle, onBundleLoadComplete, onBundleLoadError);
-					
-					assetLoader.addItem(asset);
+					assetLoader.addItem(new ScreenBundleLoaderAsset(bundle.request, bundle, onBundleLoadComplete, onBundleLoadError));
 				}
 			}
 			
 			trace( "ScreenList PROCESSING complete");
 		}
+		
+		/**
+		 * Adds the bundle to the list of bundles. 
+		 * 
+		 * @param	bundle
+		 * @return	The bundle ID (defined on the Bundle itself)
+		 */
+		public function addBundle(bundle:ScreenBundle):String {
+			var bundleIndex:uint = _bundles.length;
+			
+			if (bundle.id) {
+				bundle.index = bundleIndex;
+				_bundleIDs[bundle.id] = bundleIndex;
+				_bundles.push(bundle);
+				
+				return bundle.id;
+			} else {
+				throw new IllegalOperationError("Bundle must have an ID.");
+			}
+		}
+		
+		
+		/**
+		 * Fetch the ScreenBundle identified by bundleID
+		 * 
+		 * @param	bundleID
+		 * @return
+		 */
+		public function getBundleByID(bundleID:String):ScreenBundle {
+			if (bundleID in _bundleIDs){
+				return _bundles[_bundleIDs[bundleID]];
+			} else {
+				trace("Requested bundle (" + bundleID + ") not found.");
+				return null;
+			}
+		}
+		
+		public function getBundleByIndex(index:uint):ScreenBundle {
+			if (_bundles.length > index) {
+				return _bundles[index];
+			} else {
+				trace("Requesed bundle index (" + index + ") out of range!");
+				return null;
+			}
+		}
+		
 		
 		public function onBundleLoadComplete(bundle:ScreenBundle, success:Boolean):void {
 			
