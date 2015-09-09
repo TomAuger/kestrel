@@ -84,9 +84,15 @@ package com.zeitguys.mobile.app.model {
 			_screens.push(screen);
 		}
 		
-		
+		/**
+		 * Sets the index of this ScreenBundle within the ScreenRouter's list of bundles.
+		 */
 		public function set index(i:uint):void {
 			_index = i;
+		}
+		
+		public function get screenCount():uint {
+			return _screens.length;
 		}
 		
 		
