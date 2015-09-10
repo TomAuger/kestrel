@@ -17,6 +17,8 @@ Not at all. You can set up Flash to target iOS and Android pretty easily with th
 * Handle device orientation changes
 * Load additional assets (screens, UI elements, sounds, XML, CSS etc) after launch
 * Load HiDPI assets when Retina or HiDPI devices are detected
+* Handle localization of all text strings into different langauges
+* Deal gracefully with text, fonts and typography
 * Throw up native-looking Modal Dialog boxes
 * Handle your app going to sleep or app switching (due to a phone call, for instance)
 * Switch from Screen to Screen as a result of user interactions, with the ability to leverage Transitions between them
@@ -33,3 +35,9 @@ Not at all. You can set up Flash to target iOS and Android pretty easily with th
 ## Documentation
 
 Currently there's a fair bit of inline docs, so please look at the classes (in `src/com/zeitguys/framework`). Working on an ASDoc and some [GitHub/Wiki](https://github.com/TomAuger/kestrel/wiki) pages.
+
+## Where's the UI?
+
+Currently, Kestrel does not ship with any UI (User Interface) controls (buttons, switches, sliders, inputs etc). The reason is that Kestrel was designed to enable Flash-based developers to wrap functionality around their designs and UI. In other words - if you wanted a plain-looking or standard-looking app, then you'd probably be building it with Adobe Flex, or even Meteor + Kendo UI.
+
+That having said, we're building UI element skeletons that are just waiting to be skinned, so keep your eyes open for a UI kit update in a future release.
