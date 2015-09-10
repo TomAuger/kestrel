@@ -91,6 +91,13 @@ package com.zeitguys.mobile.app.model {
 			_index = i;
 		}
 		
+		/**
+		 * Get the index of this ScreenBundle within the ScreenRouter's list of bundles.
+		 */
+		public function get index():uint {
+			return _index;
+		}
+		
 		public function get screenCount():uint {
 			return _screens.length;
 		}
