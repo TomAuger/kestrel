@@ -201,10 +201,19 @@ package com.zeitguys.mobile.app {
 			
 			init();
 			
-			if (! _appConfig) {
-				_appConfig = new AppConfigModel(_appConfigFileURL);
+			
+			_appConfig = new AppConfigModel(_appConfigFileURL);
+			
+			// Load the app config, or initialize the config model and jump straight to onConfigLoaded()
+			// @TODO - maybe allow a callback on the model constructor and bypass having to register the
+			// event listener.
+			if (_appConfigFileURL) {
+				trace("Loading AppConfig from '" + _appConfigFileURL + "'.");
 				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
 				_appConfig.load();
+			} else {
+				_appConfig = new AppConfigModel();
+				onConfigLoaded();
 			}
 		}
 		
@@ -217,7 +226,7 @@ package com.zeitguys.mobile.app {
 		 * 
 		 * @param	event
 		 */
-		protected function onConfigLoaded(event:Event):void {
+		protected function onConfigLoaded(event:Event = null):void {
 			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
 			
 			appState = APP_STATE_READY;
@@ -782,6 +791,12 @@ package com.zeitguys.mobile.app {
 		
 		public function get styleSheet():StyleSheet {
 			return _appConfig.styleSheet;
+		}
+		
+		protected function loadStylesheet(stylesheetURL:String):void {
+			if (_appConfig) {
+				_appConfig.loadStyleSheet(stylesheetURL);
+			}
 		}
 		
 		
