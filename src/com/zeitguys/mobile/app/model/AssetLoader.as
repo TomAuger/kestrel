@@ -29,6 +29,7 @@ package com.zeitguys.mobile.app.model {
 		
 		
 		protected var _queue:Vector.<LoaderAsset> = new Vector.<LoaderAsset>;
+		protected var _currentQueuedAsset:LoaderAsset;
 		
 		protected var _status:String = STATUS_STOPPED;
 		protected var _queueCount:uint = 0;
@@ -99,7 +100,7 @@ package com.zeitguys.mobile.app.model {
 		public function setItemLoaded(item:LoaderAsset):void {
 			_loadSuccesses++;
 			
-			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.ASSET_LOADED, this, item));
+			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.ASSET_LOADED, this, item, {}, totalProgressPercent));
 			
 			loadNextItem();
 		}
@@ -113,7 +114,7 @@ package com.zeitguys.mobile.app.model {
 		public function setItemLoadError(item:LoaderAsset, error:String):void {
 			_loadErrors++;
 			
-			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.ASSET_LOAD_ERROR, this, item, { errorMsg:error } ));
+			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.ASSET_LOAD_ERROR, this, item, { errorMsg:error }, totalProgressPercent));
 			
 			loadNextItem();
 		}
@@ -149,7 +150,7 @@ package com.zeitguys.mobile.app.model {
 				 bytesLoaded: this._bytesLoaded,
 				 bytesTotal: this._bytesTotal
 			};
-			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.LOADING_PROGRESS, this, null, eventData));
+			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.LOADING_PROGRESS, this, _currentQueuedAsset, eventData, totalProgressPercent));
 		}
 		
 		
@@ -161,7 +162,7 @@ package com.zeitguys.mobile.app.model {
 					status = STATUS_STARTED;
 				}
 				
-				asset = _queue.shift();
+				_currentQueuedAsset = asset = _queue.shift();
 				
 				if (! asset.load()) {
 					trace("Loading Error: " + asset.url);
@@ -184,10 +185,11 @@ package com.zeitguys.mobile.app.model {
 			
 			trace("AssetLoader queue CLOSED. Queued: " + _queueCount + ", Successes: " + _loadSuccesses + ", Errors: " + _loadErrors);
 			
-			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.LOADING_COMPLETE, this, null, eventData));
+			dispatchEvent(new AssetLoaderEvent(AssetLoaderEvent.LOADING_COMPLETE, this, _currentQueuedAsset, eventData, totalProgressPercent));
 			
 			// I'm just thinkin' we should reset the counts here.
 			_queueCount = _loadSuccesses = _loadErrors = 0;
+			_currentQueuedAsset = null;
 			
 			status = STATUS_STOPPED;
 		}
@@ -217,8 +219,21 @@ package com.zeitguys.mobile.app.model {
 		public function get complete():Boolean {
 			return (STATUS_STOPPED == _status && 0 == _queue.length);
 		}
-		public function get queue():Number {
+		
+		public function get queue():uint {
 			return _queue.length;
+		}
+		
+		public function get totalProgressPercent():Number {
+			if ( _bytesTotal ){
+				return _bytesLoaded / _bytesTotal;
+			}
+			
+			return -1;
+		}
+		
+		public function get bytesLeftToLoad():int {
+			return _bytesTotal - _bytesLoaded;
 		}
 		
 	}

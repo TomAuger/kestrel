@@ -208,6 +208,14 @@ package com.zeitguys.mobile.app.model {
 			_onLoadError = null;
 		}
 		
+		public function get assetURL():String {
+			return _request.url;
+		}
+		
+		public function get assetName():String {
+			return assetURL.match(/[^\/\\]+$/)[0];
+		}
+		
 	}
 
 }

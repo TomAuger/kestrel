@@ -15,7 +15,8 @@ package com.zeitguys.mobile.app.model.event {
 		
 		private var _target:LoaderAsset;
 		private var _loader:AssetLoader;
-		private var _data:Object = {};
+		private var _data:Object = { };
+		private var _progress:Number;
 		
 		/**
 		 * 
@@ -26,13 +27,15 @@ package com.zeitguys.mobile.app.model.event {
 		 * @param	bubbles Default
 		 * @param	cancelable Default
 		 */
-		public function AssetLoaderEvent(type:String, loader:AssetLoader, asset:LoaderAsset = null, data:Object = null, bubbles:Boolean = false, cancelable:Boolean = false):void {
+		public function AssetLoaderEvent(type:String, loader:AssetLoader, asset:LoaderAsset = null, data:Object = null, progress:Number = -1, bubbles:Boolean = false, cancelable:Boolean = false):void {
 			super(type, bubbles, cancelable);
+			
 			_target = asset;
 			_loader = loader;
 			if (data){
 				_data = data;
 			}
+			_progress = progress;
 		}
 		
 		public function get asset():LoaderAsset {
@@ -47,8 +50,12 @@ package com.zeitguys.mobile.app.model.event {
 			return _data;
 		}
 		
+		public function get progressPercent():Number {
+			return _progress;
+		}
+		
 		override public function clone():Event {
-			return new AssetLoaderEvent(type, _loader, _target, bubbles, cancelable);
+			return new AssetLoaderEvent(type, _loader, _target, _data, _progress, bubbles, cancelable);
 		}
 		
 		override public function toString():String {
