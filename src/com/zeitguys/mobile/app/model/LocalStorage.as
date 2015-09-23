@@ -69,6 +69,22 @@ package com.zeitguys.mobile.app.model {
 		}
 		
 		/**
+		 * Clears all data and deletes the local storage object.
+		 * 
+		 * @param	storageID
+		 * @return	True if there was a local SharedObject that was cleared.
+		 */
+		public static function clear(storageID:String):Boolean {
+			var so:SharedObject = SharedObject.getLocal(storageID);
+			if (so) {
+				so.clear();
+				return true;
+			}
+			
+			return false;
+		}
+		
+		/**
 		 * Store a single value into LocalStorage.
 		 * 
 		 * @param	id
