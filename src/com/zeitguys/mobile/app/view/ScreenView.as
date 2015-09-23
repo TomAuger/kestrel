@@ -511,6 +511,8 @@
 			
 			if (hasClip) {
 				if (_bundle.loaded && name) {
+					_bundleLoaded = true;
+					
 					_setClip(bundle.getClipByName(name));
 					if (clip) {
 						prepare();
@@ -590,39 +592,27 @@
 		}
 		
 		/**
-		 * Prepares the screen by ensuring that it has a proper clip (once the Bundle has loaded).
+		 * Attempts to prepare the screen by ensuring that it has a proper clip (once the Bundle has loaded).
 		 * If all is ready, will fire {@link #setScreenLoaded()} which will trigger EVENT_SCREEN_LOADED
 		 */
 		public function prepare():void {
-			if (! screenLoaded) {
-				if (_bundle && _bundle.loaded) {
-					_bundleLoaded = true;
-				}
-				
-				if (_bundleLoaded && ! hasClip && name) {
+			if (screenLoaded && hasClip) {
+				return;
+			}
+			
+			// Only look for the clip if the bundle is actually loaded.
+			if (_bundle && _bundle.loaded) {
+				_bundleLoaded = true;
+			
+				if (! hasClip && name) {
 					_setClip(_bundle.getClipByName(name));
 				}
-				
-				if (_bundleLoaded && hasClip){
-					setScreenLoaded();
-				}
 			}
-		}
-		
-		protected function set status(status:String):void {
-			if (status !== _status) {
-				_status = status;
-				trace("Screen '" + id + "' STATUS: " + status);
-				
-				switch(_status) {
-					case STATUS_SCREEN_LOADED:
-						dispatchEvent(new Event(EVENT_SCREEN_LOADED));
-						break;
-						
-					case STATUS_READY:
-						dispatchEvent(new Event(EVENT_SCREEN_READY));
-						break;
-				}
+			
+			// We may already have set the clip, if it was
+			// passed in as a DisplayObject in the constructor
+			if (hasClip){
+				setScreenLoaded();
 			}
 		}
 		
@@ -659,6 +649,25 @@
 			}
 		}
 		
+		/**
+		 * Transition screen status and trigger the appropriate event
+		 */
+		protected function set status(status:String):void {
+			if (status !== _status) {
+				_status = status;
+				trace("Screen '" + id + "' STATUS: " + status);
+				
+				switch(_status) {
+					case STATUS_SCREEN_LOADED:
+						dispatchEvent(new Event(EVENT_SCREEN_LOADED));
+						break;
+						
+					case STATUS_READY:
+						dispatchEvent(new Event(EVENT_SCREEN_READY));
+						break;
+				}
+			}
+		}
 		
 		
 		/**
