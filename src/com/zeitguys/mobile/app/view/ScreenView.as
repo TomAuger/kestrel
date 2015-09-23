@@ -79,12 +79,9 @@
 			}
 			
 			if (screenClip is DisplayObjectContainer) {
-				_setClip(DisplayObjectContainer(screenClip));
+				_setClip(DisplayObjectContainer(screenClip)); // also sets the clip name
 			} else if (screenClip is String) {
 				setClipName(String(screenClip));
-				if (_bundleLoaded) {
-					_setClip(_bundle.getClipByName(name));
-				}
 			}
 			
 			_id = generate_id();
@@ -95,7 +92,14 @@
 				_TransitionOut = TransitionBase;
 			}
 			
+			// Check whether the bundle is loaded, and if so,
+			// call setClip() and if that works, change status to 
+			// STATUS_SCREEN_LOADED, and call onClipLoaded()
 			prepare();
+			
+			// If prepare() doesn't complete (because the bundle is not loaded)
+			// then prepare() must be called by the ScreenBundle.prepareScreens(),
+			// which is triggered when the ScreenBundle is loaded.
 		}
 		
 		
