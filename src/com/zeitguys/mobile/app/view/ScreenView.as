@@ -489,29 +489,6 @@
 		
 		
 		
-		
-		
-		/**
-		 * Screen has been loaded and now we are sure to have a clip. But it may not yet be added to the stage.
-		 * 
-		 * @see /onClipLoaded()
-		 * 
-		 * @param	event
-		 */
-		private function onScreenLoaded():void {
-			// This is a good time to capture the original coordinates of the clip.
-			_clipOrigX = clip.x;
-			_clipOrigY = clip.y;
-			
-			onClipLoaded();
-			
-			if (clip.parent) { 
-				onAdded();
-			} else {
-				clip.addEventListener(Event.ADDED, onAdded, false, 0, true);
-			}
-		}
-		
 		/**
 		 * Initialize the screen. This sequences all the start-up activities that will
 		 * occur with the screen, possibly long before it is ever displayed.
@@ -658,7 +635,19 @@
 				_screenLoaded = true;
 				
 				status = STATUS_SCREEN_LOADED;
-				onScreenLoaded();
+				
+				
+				// This is a good time to capture the original coordinates of the clip.
+				_clipOrigX = clip.x;
+				_clipOrigY = clip.y;
+				
+				onClipLoaded();
+				
+				if (clip.parent) { 
+					onAdded();
+				} else {
+					clip.addEventListener(Event.ADDED, onAdded, false, 0, true);
+				}
 			}
 		}
 		
