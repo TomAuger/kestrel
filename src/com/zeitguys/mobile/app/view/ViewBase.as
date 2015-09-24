@@ -173,6 +173,10 @@ package com.zeitguys.mobile.app.view {
 		public function setText(textField:*, textOrHTML:String, variables:Object = null, isHTML:Boolean = false, autoSize:Boolean = true):Boolean {
 			var field:TextField;
 			
+			if (textOrHTML === null) {
+				textOrHTML = "";
+			}
+			
 			if (textField == null) {
 				if (_clip) {
 					if (_clip is TextField){	
@@ -194,7 +198,7 @@ package com.zeitguys.mobile.app.view {
 			}
 			
 			if (field) {
-				if (TextUtils.hasHtmlEntities(textOrHTML)) {
+				if (textOrHTML && TextUtils.hasHtmlEntities(textOrHTML)) {
 					isHTML = true;
 					textOrHTML = TextUtils.convertEntities(textOrHTML);	
 				}
@@ -249,11 +253,13 @@ package com.zeitguys.mobile.app.view {
 		 * @return
 		 */
 		protected function parseVariables(textToParse:String, variables:Object = null):String {
-			var matches:Array = textToParse.match(/%%\w+%%/g);
-			
-			for each (var variable:String in matches) {
-				variable = variable.replace(/%/g, "");
-				textToParse = textToParse.replace(new RegExp("%%" + variable + "%%"), getTextVariable(variable, variables));
+			if (textToParse){
+				var matches:Array = textToParse.match(/%%\w+%%/g);
+				
+				for each (var variable:String in matches) {
+					variable = variable.replace(/%/g, "");
+					textToParse = textToParse.replace(new RegExp("%%" + variable + "%%"), getTextVariable(variable, variables));
+				}
 			}
 			
 			return textToParse;
