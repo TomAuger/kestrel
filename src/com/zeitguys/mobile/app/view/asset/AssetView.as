@@ -181,10 +181,10 @@ package com.zeitguys.mobile.app.view.asset
 					
 					trace("  + " + name + " ACTIVATED");
 				} else {
-					trace("  + " + name + " NOT activated (disabled)");
+					trace("  . " + name + " NOT activated (disabled)");
 				}
 			} else {
-				trace("  + " + name + " SKIPPING activation");
+				trace("  . " + name + " SKIPPING activation");
 			}
 		}
 		
@@ -199,11 +199,12 @@ package com.zeitguys.mobile.app.view.asset
 				for each (var childAsset:AssetView in _childAssets) {
 					childAsset.deactivate();
 				}	
+				
 				_active = false;
 				
 				trace("  - " + name + " DEACTIVATED");
 			} else {
-				trace("  - " + name + " SKIPPING deactivation");
+				trace("  . " + name + " SKIPPING deactivation");
 			}
 		}
 		
@@ -213,19 +214,20 @@ package com.zeitguys.mobile.app.view.asset
 		 * If the asset has already been initialized
 		 */
 		public function disable():void {
-			if (! _disabled){
+			if (! _disabled) {
+				deactivate();
+				
+				// Disable child assets.
+				for each (var childAsset:AssetView in _childAssets) {
+					childAsset.disable();
+				}
 				
 				_disabled = true;
-				
 				onDisabled();
 				
 				trace("  - " + name + " DISABLED");
-				
-				if (_active) {
-					deactivate();
-				}
 			} else {
-				trace("  - " + name + " DISABLE skipped (already disabled)");
+				trace("  . " + name + " DISABLE skipped (already disabled)");
 			}
 		}
 		
@@ -239,6 +241,11 @@ package com.zeitguys.mobile.app.view.asset
 			if (_disabled) { 
 				_disabled = false;
 				
+				// Enable child assets
+				for each (var childAsset:AssetView in _childAssets) {
+					childAsset.enable();
+				}	
+				
 				onEnabled();
 				
 				trace("  + " + name + " ENABLED");
@@ -247,7 +254,7 @@ package com.zeitguys.mobile.app.view.asset
 					activate();
 				}
 			} else {
-				trace("  + " + name + " ENABLE skipped (already enabled)");
+				trace("  . " + name + " ENABLE skipped (already enabled)");
 			}
 		}
 		
