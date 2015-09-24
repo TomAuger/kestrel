@@ -217,10 +217,7 @@ package com.zeitguys.mobile.app.view.asset
 			if (! _disabled) {
 				deactivate();
 				
-				// Disable child assets.
-				for each (var childAsset:AssetView in _childAssets) {
-					childAsset.disable();
-				}
+				// See enable() for why we don't disable child assets atomatically.
 				
 				_disabled = true;
 				onDisabled();
@@ -241,10 +238,10 @@ package com.zeitguys.mobile.app.view.asset
 			if (_disabled) { 
 				_disabled = false;
 				
-				// Enable child assets
-				for each (var childAsset:AssetView in _childAssets) {
-					childAsset.enable();
-				}	
+				// We don't automatically enable child assets when the parent is enabled
+				// because a child asset may have been deiberately deactivated.
+				
+				// Child classes can override and enable child assets manually.
 				
 				onEnabled();
 				
