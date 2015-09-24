@@ -23,7 +23,7 @@ package com.zeitguys.util
 		 * @param	field
 		 * @param	content
 		 * @param	isHTML
-		 * @param	autoSize ignored. AutoSize is applied for multi-line TextField, disabled for single line (unless you play with autosizeCutoffHeight
+		 * @param	autoSize Whether to autosize the textField. AutoSize is disabled for single line (unless you play with autosizeCutoffHeight)
 		 */
 		static public function setTextFieldContent(field:TextField, content:String, isHTML:Boolean = false, autoSize:Boolean = true):void {
 			var htmlCheck:Boolean = false, 
@@ -41,9 +41,9 @@ package com.zeitguys.util
 				htmlCheck = true;
 			}
 
-			// A lot of issues can be created by things like leading. This is a workaround.
-			// In other words, you can't actually disable autosize - that argument is kind of ignored right now.
-			field.autoSize = TextFieldAutoSize.LEFT;
+			if (autoSize){
+				field.autoSize = TextFieldAutoSize.LEFT;
+			}
 			
 			if (isHTML || htmlCheck) {
 				// Remove excess white space
