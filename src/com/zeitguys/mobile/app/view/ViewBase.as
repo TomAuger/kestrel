@@ -199,7 +199,7 @@ package com.zeitguys.mobile.app.view {
 					textOrHTML = TextUtils.convertEntities(textOrHTML);	
 				}
 				
-				TextUtils.setTextFieldContent(field, parseVariables(textOrHTML, variables), isHTML, autoSize);
+				setTextFieldContent(field, parseVariables(textOrHTML, variables), isHTML, autoSize);
 				
 				return true;
 			} else {
@@ -207,6 +207,24 @@ package com.zeitguys.mobile.app.view {
 			}
 			
 			return false;
+		}
+		
+		/**
+		 * @uses TextUtils.setTextFieldContent()
+		 * 
+		 * Sets the TextField's .text or .htmlText property. Includes the additional logic for preserving the TextFormat / setting the stylesheet.
+		 * 
+		 * Maybe override in child classes if you need to change the way autosize / stylesheets / textFormats are handled
+		 * on a case-by-case basis.
+		 * 
+		 * @param	field
+		 * @param	textOrHTML
+		 * @param	isHTML
+		 * @param	autoSize
+		 * @return
+		 */
+		protected function setTextFieldContent(field:TextField, textOrHTML:String, isHTML:Boolean = false, autoSize:Boolean = true):void {
+			return TextUtils.setTextFieldContent(field, textOrHTML, isHTML, autoSize);
 		}
 		
 		

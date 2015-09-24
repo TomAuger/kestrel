@@ -17,9 +17,6 @@ package com.zeitguys.util
 		/**
 		 * Sets the TextField's .text or .htmlText property. Includes the additional logic for preserving the TextFormat / setting the stylesheet.
 		 * 
-		 * Maybe override in child classes if you need to change the way autosize / stylesheets / textFormats are handled
-		 * on a case-by-case basis.
-		 * 
 		 * @param	field
 		 * @param	content
 		 * @param	isHTML
