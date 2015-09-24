@@ -13,6 +13,9 @@ package com.zeitguys.util
 	 */
 	public class TextUtils {
 		static public var styleSheet:StyleSheet;
+		// Arbitrary number that fixes cutoff to descenders when autoSize = true on some fonts.
+		// Completely DISABLES autoSize on single-line (only) textFields, when ABOVE this threshold.
+		static public var autosizeCutoffHeight:Number = 0; 
 		
 		/**
 		 * Sets the TextField's .text or .htmlText property. Includes the additional logic for preserving the TextFormat / setting the stylesheet.
@@ -20,6 +23,7 @@ package com.zeitguys.util
 		 * @param	field
 		 * @param	content
 		 * @param	isHTML
+		 * @param	autoSize ignored. AutoSize is applied for multi-line TextField, disabled for single line (unless you play with autosizeCutoffHeight
 		 */
 		static public function setTextFieldContent(field:TextField, content:String, isHTML:Boolean = false, autoSize:Boolean = true):void {
 			var htmlCheck:Boolean = false, 
@@ -38,6 +42,7 @@ package com.zeitguys.util
 			}
 
 			// A lot of issues can be created by things like leading. This is a workaround.
+			// In other words, you can't actually disable autosize - that argument is kind of ignored right now.
 			field.autoSize = TextFieldAutoSize.LEFT;
 			
 			if (isHTML || htmlCheck) {
@@ -66,11 +71,14 @@ package com.zeitguys.util
 				visibleLines = field.numLines;
 			}
 			
+			// For obscure reasons, descenders (like lower-case "g") get cut off on some fonts
+			// when autoSize = true and the TextField is a single line.
 			if (autoSize) {
 				if (visibleLines < 2) {
 					metrics = field.getLineMetrics(0);
-					
-					field.autoSize = TextFieldAutoSize.NONE;
+					if (metrics.height > autosizeCutoffHeight){
+						field.autoSize = TextFieldAutoSize.NONE;
+					}
 					
 					// Adjust the single line size to compensate for leading + obligatory 2px padding.
 					field.height = field.textHeight - metrics.leading + 4;
