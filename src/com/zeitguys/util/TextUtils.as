@@ -72,11 +72,18 @@ package com.zeitguys.util
 			}
 			
 			// For obscure reasons, descenders (like lower-case "g") get cut off on some fonts
-			// when autoSize = true and the TextField is a single line.
+			// when autoSize = true, the TextField is a single line, and leading is negative.
 			if (autoSize) {
 				if (visibleLines < 2) {
-					metrics = field.getLineMetrics(0);
-					if (metrics.height > autosizeCutoffHeight){
+					// Remove any leading (one way or another) since it's not relevant in single-line context,
+					// and negative leading totally messes things up. Totally.
+					if (!isHTML){
+						tf.leading = 0;
+						field.setTextFormat(tf);
+					}
+					
+					metrics = field.getLineMetrics(0); 
+					if (metrics.ascent > autosizeCutoffHeight){
 						field.autoSize = TextFieldAutoSize.NONE;
 					}
 					
