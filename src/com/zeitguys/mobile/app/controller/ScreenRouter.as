@@ -64,8 +64,10 @@
 		 * 
 		 * By default, will advance the history (ie: keep a reference to the previous screen in the history and increase the index) and will trigger EVENT_SCREEN_CHANGED.
 		 * 
+		 * @TODO there's a condition where if a screen triggers setScreen() while within its setup sequence (setup, localize, reset), the previous setScreen() continues after all that is done.
+		 * 
 		 * @param	screen 			String|ScreenView. If String, expects a valid Screen ID.
-		 * @param	resetView	
+		 * @param	resetView		Whether to run reset() on the screen during the setup sequence
 		 * @param	triggerEvent	Whether to trigger EVENT_SCREEN_CHANGED
 		 * @param	args			Additional args. If there are any, 
 		 */
