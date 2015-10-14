@@ -33,7 +33,7 @@
 		protected var _ModalClass:Class;
 		
 		protected var _bodyText:TextField;
-		protected var _bg:MovieClip;
+		protected var _bg:DisplayObject;
 		
 		protected var _flexGroup:FlexGroup = new FlexGroup;
 		
@@ -136,7 +136,9 @@
 		 * Maybe override in child classes if you need, for example, a Header as well as a Body text.
 		 */
 		protected function defineTextFields():void {
-			_bodyText = new TextField();
+			if (clip is DisplayObjectContainer){
+				_bodyText = getDescendantByName("body", DisplayObjectContainer(clip)) as TextField;
+			}
 		}
 		
 		/**
@@ -191,7 +193,9 @@
 		 * In order for the background to scale properly, make sure it is 9-sliced if it has non-square corners.
 		 */
 		protected function defineBackground():void {
-			// do something with _bg
+			if (clip is DisplayObjectContainer) {
+				_bg = getDescendantByName("bg", DisplayObjectContainer(clip));
+			}
 		}
 		
 		/**
@@ -533,7 +537,7 @@
 		}
 		
 		public function setBodyText(bodyText):void {
-			if (_bodyText && bodyText){
+			if (bodyText && _bodyText is TextField){
 				TextUtils.setTextFieldContent(_bodyText, bodyText);
 			}
 		}
