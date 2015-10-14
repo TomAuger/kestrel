@@ -33,6 +33,8 @@ package com.zeitguys.mobile.app.model
 		public function registerLiveCallback(callback:Function, fieldName:String):void {
 			var fieldCallbacks:Array = _watchedFields[fieldName] || [];
 			
+			trace("(o) Watching field '" + fieldName + "' with callback " + callback);
+			
 			if (fieldCallbacks.indexOf(callback) == -1) {
 				fieldCallbacks.push(callback);
 			}
@@ -53,19 +55,23 @@ package com.zeitguys.mobile.app.model
 			var fieldCallbacks:Array;
 			var callbackIndex:int;
 			
+			trace("(-) Unregistering callback " + callback + " for field '" + fieldName + "'");
+			
 			if (fieldName && fieldName in _watchedFields) {
 				fieldCallbacks = _watchedFields[fieldName];
 			}
 			
-			callbackIndex = fieldCallbacks.indexOf(callback);
-			if (callbackIndex > -1) {
-				fieldCallbacks.splice(callbackIndex, 1);
-			}
-			
-			if (fieldCallbacks.length) {
-				_watchedFields[fieldName] = fieldCallbacks;
-			} else {
-				delete _watchedFields[fieldName];
+			if (fieldCallbacks){
+				callbackIndex = fieldCallbacks.indexOf(callback);
+				if (callbackIndex > -1) {
+					fieldCallbacks.splice(callbackIndex, 1);
+				}
+				
+				if (fieldCallbacks.length) {
+					_watchedFields[fieldName] = fieldCallbacks;
+				} else {
+					delete _watchedFields[fieldName];
+				}
 			}
 		}
 		
