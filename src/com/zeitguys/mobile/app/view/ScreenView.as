@@ -730,29 +730,71 @@
 		 *                                                   MODALS
 		/* ===========================================================================================================*/
 		
-		protected function addModal(id:String, bodyText:String = "", ... modalArgs):ModalView {
-			trace("Adding Screen Modal [" + id + "]");
+		/**
+		 * Child screens and screen assets can query the ScreeView to see whether a particular modal has been defined.
+		 * 
+		 * Can be used to avoid the ArgumentError thrown by setModal.
+		 * 
+		 * @param	id
+		 * @return
+		 */
+		public function hasModal(id:String):Boolean {
+			return _screenModals.hasOwnProperty(id);
+		}
+		
+		/**
+		 * Sets the app modal to the modal identified by `id`.
+		 * 
+		 * @throws ArgumentError if that modal has not yet been defined by {@link addModal()}.
+		 * @param	id
+		 * @return
+		 */
+		public function setModal(id:String):ModalView {
+			var modal:ModalView = getModal(id);
 			
-			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
-			_screenModals[id] = modal;
+			if (modal){
+				app.currentModal = modal;
+			} else {
+				throw new ArgumentError("Screen '" + _id + "' has no Modal defined for '" + id + "'.");
+			}
 			
 			return modal;
 		}
 		
+		/**
+		 * Child screens and screen assets use this to "register" a modal with the Screen.
+		 * 
+		 * @see ModalFactory.getModal()
+		 * 
+		 * @param	id
+		 * @param	bodyText
+		 * @param	... modalArgs
+		 * @return
+		 */
+		public function addModal(id:String, bodyText:String = "", ... modalArgs):void {
+			trace("Adding Screen Modal [" + id + "]");
+			
+			//var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
+			//_screenModals[id] = modal;
+			
+			_screenModals[id] = { bodyText : bodyText, modalArgs : modalArgs };
+		}
+		
+		/**
+		 * Late instantiation of ModalView
+		 * 
+		 * @see AppBase.getModal()
+		 * 
+		 * @param	id
+		 * @return
+		 */
 		protected function getModal(id:String):ModalView {
 			if (_screenModals.hasOwnProperty(id)) {
-				return ModalView(_screenModals[id]);
+				//return ModalView(_screenModals[id]);
+				return app.getModal.apply(this, [_screenModals[id].bodyText].concat(_screenModals[id].modalArgs));
 			} else {
 				throw new RangeError("Modal with ID '" + id + "' has not been defined!");
 			}
-		}
-		
-		protected function setModal(id:String):ModalView {
-			var modal:ModalView = getModal(id);
-			
-			app.currentModal = modal;
-			
-			return modal;
 		}
 		
 		protected function getModalComponentText(localizer:Localizer, alertID:String, component:String):String {

@@ -2,6 +2,8 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	
 	/**
 	 * ...
@@ -17,7 +19,29 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		public function getModal(modalText:String, modalArgs:Array):ModalView {
-			return new ModalView(_app, modalText, parseModalArgs(modalArgs));
+			var buttons:Vector.<ModalButtonData> = parseModalArgs(modalArgs);
+			
+			return new ModalView(_app, getModalClip(buttons), modalText, buttons);
+		}
+		
+		/**
+		 * Override in child classes to return the appropriate clip based on the button data.
+		 * 
+		 * This abstract method just assembles the minimum requirements so that ModalView doesn't throw a FlashConstructionError
+		 * 
+		 * @param	buttons
+		 * @return
+		 */
+		protected function getModalClip(buttons:Vector.<ModalButtonData>):* {
+			var modalClip:Sprite = new Sprite();
+			var okButton:MovieClip = new MovieClip();
+			
+			modalClip.name = "Modal_" + ModalView.__instanceNumber++;
+			okButton.name = "ok";
+			
+			modalClip.addChild(okButton);
+			
+			return modalClip;
 		}
 		
 		protected function parseModalArgs(modalArgs:Array):Vector.<ModalButtonData> {
