@@ -20,6 +20,7 @@ package com.zeitguys.mobile.app.view {
 	 * Base View that all ScreenViews and AssetViews inherit from.
 	 * 
 	 * @TODO - AppTheme needs to go, and we need to figure out how to load stylesheets in a more universal way.
+	 * @TODO - refactor AssetView activate/deactivate active/inactive into ViewBase
 	 * 
 	 * @author TomAuger
 	 */
@@ -47,7 +48,10 @@ package com.zeitguys.mobile.app.view {
 		
 		protected function _setClip(clipDisplayObject:DisplayObject):void {
 			_clip = clipDisplayObject;
-			_clipName = _clip.name;
+			
+			if (_clip){
+				_clipName = _clip.name;
+			}
 		}
 		
 		public function get clip():DisplayObject {
