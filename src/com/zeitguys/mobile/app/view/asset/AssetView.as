@@ -91,6 +91,33 @@ package com.zeitguys.mobile.app.view.asset
 		
 		/**
 		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is shown. Currently does not include when the
+		 * asset is first initialized.
+		 * 
+		 * @see show()
+		 * 
+		 * Hook your "show" animations here.
+		 */
+		protected function onShow() {
+			clip.visible = true;
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is hidden.
+		 * 
+		 * @see hide()
+		 * 
+		 * Hook your "hide" animations here.
+		 */
+		protected function onHide() {
+			clip.visible = false;
+		}
+		
+		/**
+		 * Override in child classes.
 		 * This method is called __every__ time a screen is displayed (switched to from another screen), just before localize() is run.
 		 * Use this method to setup things that the localizer needs to know about. 
 		 */
@@ -261,7 +288,7 @@ package com.zeitguys.mobile.app.view.asset
 			}
 			
 			if (clip) {
-				clip.visible = true;
+				onShow();
 			}
 		}
 		
@@ -269,7 +296,7 @@ package com.zeitguys.mobile.app.view.asset
 			disable();
 			
 			if (clip) {
-				clip.visible = false;
+				onHide();
 			}
 		}
 		
