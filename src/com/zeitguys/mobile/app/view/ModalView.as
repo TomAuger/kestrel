@@ -318,9 +318,12 @@
 		 * 
 		 * @param	alignment
 		 */
-		protected function alignModal(alignment:String):void {
+		protected function alignModal(alignment:String):void { trace("s", parentClip.scaleX);
 			var parentWidth:Number = parentClip.stage ? parentClip.stage.stageWidth / 2 : parentClip.width / 2;
 			var parentHeight:Number = parentClip.stage ? parentClip.stage.stageHeight / 2 : parentClip.height / 2;
+			
+			parentWidth /= parentClip.scaleX;
+			parentHeight /= parentClip.scaleY;
 			
 			switch(alignment) {
 				// May need to take status bar into account for iOS6
