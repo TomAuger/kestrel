@@ -16,7 +16,7 @@
 	<text xml:lang="ja">Japanese App name goes here</text>
 	</name>
 -->
-<application xmlns="http://ns.adobe.com/air/application/16.0">
+<application xmlns="http://ns.adobe.com/air/application/19.0">
   <id>Kestrel-Flash-IDE-Sample</id>
   <versionNumber>1.0</versionNumber>
   <filename>Kestrel_Flash-IDE_Sample</filename>
