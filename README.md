@@ -32,4 +32,4 @@ Not at all. You can set up Flash to target iOS and Android pretty easily with th
 
 ## Documentation
 
-Currently there's a fair bit of inline docs, so please look at the classes (in `src/com/zeitguys/framework`). Working on an ASDoc and some [GitHub/Wiki](https://github.com/TomAuger/kestrel/wiki) pages.
+Currently there's a fair bit of inline docs, so please look at the classes (in `src/com/zeitguys/mobile`). Working on an ASDoc and some [GitHub/Wiki](https://github.com/TomAuger/kestrel/wiki) pages.
