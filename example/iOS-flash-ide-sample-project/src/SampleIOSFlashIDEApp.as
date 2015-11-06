@@ -15,6 +15,10 @@ package {
 			super();
 		
 		}
+		
+		override protected function initialize():void {
+			screenList = new SampleAppScreenList();
+		}
 	
 	}
 
