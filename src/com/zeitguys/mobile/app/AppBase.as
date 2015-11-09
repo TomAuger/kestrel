@@ -56,8 +56,11 @@ package com.zeitguys.mobile.app {
 		public static const APP_STATE_DEACTIVATED:String = "deactivated";
 		public static const APP_STATE_SUSPENDING:String = "suspending";
 		public static const APP_STATE_PAUSED:String = "paused";
+		public static const APP_STATE_ERROR:String = "error";
 		
 		public static const DEVICE_MODEL_SIMULATOR:String = "simulator";
+		
+		private const ERROR_CONFIG_LOAD_ERROR:uint = 1;
 		
 		
 		protected var _supportsAutoOrients:Boolean = true;
@@ -208,6 +211,7 @@ package com.zeitguys.mobile.app {
 			if (appConfigURL) {
 				trace("Loading AppConfig from '" + appConfigURL + "'.");
 				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
 				_appConfig.load();
 			} else {
 				onConfigLoaded();
@@ -215,6 +219,23 @@ package com.zeitguys.mobile.app {
 		}
 		
 		
+		/**
+		 * Child apps can override this if they want to allow Config to be optional.
+		 * As it is, a missing config XML file or stream error will cause the app to halt.
+		 * 
+		 * @param	event
+		 */
+		protected function onConfigError(event:Event):void {
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+			
+			appState = APP_STATE_ERROR;
+			
+			trace("App Error: Config File couldn't be loaded.");
+			
+			// May not work on iOS
+			NativeApplication.nativeApplication.exit(ERROR_CONFIG_LOAD_ERROR);
+		}
 		
 		
 		
@@ -225,6 +246,7 @@ package com.zeitguys.mobile.app {
 		 */
 		protected function onConfigLoaded(event:Event = null):void {
 			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
 			
 			appState = APP_STATE_READY;
 			
