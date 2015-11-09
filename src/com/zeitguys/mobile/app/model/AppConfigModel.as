@@ -85,7 +85,8 @@
 			_data = new XML(_loader.data);
 			_isLoaded = true;
 			dispatchEvent(new Event(EVENT_CONFIG_LOADED));
-			if (_data.elements('theme').elements('stylesheet')) {
+			
+			if (_data.elements('theme').elements('stylesheet').length()) {
 				loadStyleSheet(_data.elements('theme').elements('stylesheet'));
 			}
 			
