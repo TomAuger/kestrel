@@ -114,7 +114,7 @@ package com.zeitguys.mobile.app.model {
 		}
 		
 		/**
-		 * Override in child classes.
+		 * Override in child classes. Called before any _loadError callback is executed.
 		 */
 		protected function loadError():void {
 			
