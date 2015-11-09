@@ -68,8 +68,6 @@
 				removeListeners();
 			}
 		}
-	
-	
 		
 		/**
 		 * Called by a successful load.
@@ -112,8 +110,8 @@
 			return _stylesheet;
 		}
 		
-		private function onStylesError():void {
-			trace('CSS styles Load ERROR.');
+		private function onStylesError(asset:LoaderAsset, message:String):void {
+			trace('CSS styles Load ERROR: ' + message);
 		}
 		
 		/**
