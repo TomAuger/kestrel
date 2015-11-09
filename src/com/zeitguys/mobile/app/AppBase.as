@@ -204,7 +204,13 @@ package com.zeitguys.mobile.app {
 			
 			init();
 			
-			
+			initializeConfig();
+		}
+		
+		/**
+		 * Override in child apps that need to use a custom AppConfigModel.
+		 */
+		protected function initializeConfig():void {
 			_appConfig = new AppConfigModel(appConfigURL);
 			
 			// Load the app config, or jump straight to onConfigLoaded().
