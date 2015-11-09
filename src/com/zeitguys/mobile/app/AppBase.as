@@ -202,17 +202,14 @@ package com.zeitguys.mobile.app {
 			init();
 			
 			
-			_appConfig = new AppConfigModel(_appConfigFileURL);
+			_appConfig = new AppConfigModel(appConfigURL);
 			
-			// Load the app config, or initialize the config model and jump straight to onConfigLoaded()
-			// @TODO - maybe allow a callback on the model constructor and bypass having to register the
-			// event listener.
-			if (_appConfigFileURL) {
-				trace("Loading AppConfig from '" + _appConfigFileURL + "'.");
+			// Load the app config, or jump straight to onConfigLoaded().
+			if (appConfigURL) {
+				trace("Loading AppConfig from '" + appConfigURL + "'.");
 				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
 				_appConfig.load();
 			} else {
-				_appConfig = new AppConfigModel();
 				onConfigLoaded();
 			}
 		}
@@ -328,10 +325,22 @@ package com.zeitguys.mobile.app {
 		
 		
 		/**
-		 * Child apps should use this method to set the URL of their config XML file, if one is needed.
+		 * Child apps can use this method to set the URL of their config XML file, if one is needed.
+		 * It must be set during `init` or earlier, as the appConfigModel is instantiated during `onAddedToStage`.
+		 * 
+		 * An alternate method is to simply override the getter to provide the hard-coded URL. 
+		 * @see get appConfigURL()
 		 */
 		protected function set appConfigURL(appConfigFileURL:String):void {
 			_appConfigFileURL = appConfigFileURL;
+		}
+		
+		/**
+		 * Child apps can override this to hard-code the config XML file's URL,
+		 * or you can set `appConfigURL` at init() or even within the App's constructor.
+		 */
+		protected function get appConfigURL():String {
+			return _appConfigFileURL;
 		}
 		
 		
