@@ -279,6 +279,13 @@ package com.zeitguys.mobile.app.view {
 				case ALIGNMENT_CENTERED :
 					_clip.x = _parent.stage.stageWidth / 2 - (_clip.width / 2);
 					_clip.y = _parent.stage.stageHeight / 2 - (_clip.height / 2);
+					
+					// handle simulator exception
+					if ('Windows' == app.deviceOS) {
+						_clip.x = _clip.x / 2 - (_clip.width / 4 );
+						_clip.y = _clip.y / 2 - (_clip.height / 4);
+					}
+					
 					break;
 				default :
 					throw new RangeError("'" + alignment + "' is not a recognized Modal alignment.");
