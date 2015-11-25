@@ -16,7 +16,7 @@ package com.zeitguys.mobile.ios {
 		public static const DEVICE_MODEL_IPHONE:String = "iphone";
 		public static const DEVICE_MODEL_IPAD:String = "ipad";
 		
-		private var _deviceResolution:String = RESOLUTION_RETINA;
+		private var _deviceResolution:String;
 		private var _assetResolution:String = RESOLUTION_RETINA;
 		private var _deviceModel:String;
 		
@@ -82,11 +82,17 @@ package com.zeitguys.mobile.ios {
 					_deviceResolution = RESOLUTION_RETINA;
 				}
 			} else {
-				if (dimensions.width < 2048) {
+				if (dimensions.width < 1536) {
 					_deviceResolution = RESOLUTION_NORMAL;
 				} else {
 					_deviceResolution = RESOLUTION_RETINA;
 				}
+			}
+			
+			// In the simulator / desktop, let's got with Normal resolution
+			if ('Windows' == deviceOS) {
+				_deviceResolution = RESOLUTION_NORMAL;
+				trace("Simulator detected.");
 			}
 			
 			return _deviceResolution;
