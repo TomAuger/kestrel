@@ -485,6 +485,22 @@ package com.zeitguys.mobile.app.view {
 		
 		
 		
+		/**
+		 * Child screens and child assets can call setModal to set the screen in Modal mode
+		 * and display the modal identified by `id`.
+		 * 
+		 * @see get isModal()
+		 * 
+		 * @param	id
+		 * @return
+		 */
+		public function setModal(id:String):ModalView {
+			var modal:ModalView = getModal(id);
+			
+			app.currentModal = modal;
+			
+			return modal;
+		}
 		
 		
 		/**
@@ -757,14 +773,6 @@ package com.zeitguys.mobile.app.view {
 			} else {
 				throw new RangeError("Modal with ID '" + id + "' has not been defined!");
 			}
-		}
-		
-		protected function setModal(id:String):ModalView {
-			var modal:ModalView = getModal(id);
-			
-			app.currentModal = modal;
-			
-			return modal;
 		}
 		
 		protected function getModalComponentText(localizer:Localizer, alertID:String, component:String):String {
