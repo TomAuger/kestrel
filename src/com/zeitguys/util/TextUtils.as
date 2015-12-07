@@ -23,8 +23,10 @@ package com.zeitguys.util
 		 * @param	field
 		 * @param	content
 		 * @param	isHTML
+		 * 
+		 * @return	The fully parsed content, in case you want it for something else!
 		 */
-		static public function setTextFieldContent(field:TextField, content:String, isHTML:Boolean = false, autoSize:Boolean = true):void {
+		static public function setTextFieldContent(field:TextField, content:String, isHTML:Boolean = false, autoSize:Boolean = true):String {
 			var htmlCheck:Boolean = false, 
 				tf:TextFormat,
 				metrics:TextLineMetrics,
@@ -79,6 +81,8 @@ package com.zeitguys.util
 					field.height = field.textHeight - metrics.leading + 4;
 				}
 			}
+			
+			return content;
 		}
 	}
 }

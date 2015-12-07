@@ -163,7 +163,7 @@ package com.zeitguys.mobile.app.view {
 		 * @param	isHTML Optional.
 		 * @param 	autoSize Optional.
 		 */
-		public function setText(textField:*, textOrHTML:String, variables:Object = null, isHTML:Boolean = false, autoSize:Boolean = true):void {
+		public function setText(textField:*, textOrHTML:String, variables:Object = null, isHTML:Boolean = false, autoSize:Boolean = true):String {
 			var field:TextField;
 			
 			if (textField == null) {
@@ -192,10 +192,12 @@ package com.zeitguys.mobile.app.view {
 					textOrHTML = convertEntities(textOrHTML);	
 				}
 				
-				TextUtils.setTextFieldContent(field, parseVariables(textOrHTML, variables), isHTML, autoSize);
+				return TextUtils.setTextFieldContent(field, parseVariables(textOrHTML, variables), isHTML, autoSize);
 			} else {
 				trace("ViewBase.setText() WARNING: Could not find appropriate TextField (" + textField.name + ") in " + _clipName + ".");
 			}
+			
+			return "";
 		}
 		
 		public function get clipName():String {
