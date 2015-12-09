@@ -110,11 +110,11 @@ package com.zeitguys.mobile.app.view {
 		 * 
 		 * @param	newText The String we want to appear in the TextField
 		 */
-		public function setItemText(newText:String = ""):void {
+		public function setItemText(newText:String = ""):String {
 			if (asset) {
-				asset.setText(localizableTextField, newText);
+				return asset.setText(localizableTextField, newText);
 			} else {
-				TextUtils.setTextFieldContent(localizableTextField, newText);
+				return TextUtils.setTextFieldContent(localizableTextField, newText);
 			}
 		}
 		
