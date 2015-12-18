@@ -514,17 +514,24 @@ package com.zeitguys.mobile.app {
 		 * Screens can theoretically close the modal manually, bypassing the event dispatch altogether.
 		 */
 		public function clearModal():void {
-			_currentModal.close();
+			if (_currentModal){
+				_currentModal.close();
+			}
 		}
 		
 		public function set currentModal(modal:ModalView):void {
 			if (_currentModal) {
 				clearModal();
 			}
-			_currentScreen.enterModal();
+			// Set the current modal BEFORE we call enterModal() on the screen,
+			// because typically enterModal() calls deactivate() and we may want
+			// to check app.isModal on deactivate
 			
 			_lastModalButtonSelected = null;
 			_currentModal = modal;
+			
+			_currentScreen.enterModal();
+			
 			_currentModal.addEventListener(ModalView.EVENT_CLOSE, onCurrentModalClosed, false, 0, true);
 			_currentModal.open();
 		}
