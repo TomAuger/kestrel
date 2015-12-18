@@ -10,11 +10,13 @@ package com.zeitguys.mobile.app.model.vo {
 		protected var _label:String;
 		protected var _id:String;
 		protected var _callback:Function;
+		protected var _disabled:Boolean;
 		
-		public function ModalButtonData(id:String, label:String = "", callback:Function = null, clip:MovieClip = null ) {
+		public function ModalButtonData(id:String, label:String = "", callback:Function = null, clip:MovieClip = null, disabled:Boolean = false ) {
 			_id = id;
 			_clip = clip;
 			_label = label;
+			_disabled = disabled;
 			
 			if (callback is Function) {
 				_callback = callback;
@@ -55,6 +57,14 @@ package com.zeitguys.mobile.app.model.vo {
 			}
 			
 			return false;
+		}
+		
+		public function get disabled():Boolean {
+			return _disabled;
+		}
+		
+		public function set disabled(off:Boolean):void {
+			_disabled = off;
 		}
 	
 	}
