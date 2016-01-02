@@ -26,7 +26,7 @@ package com.zeitguys.mobile.ios {
 		 * @param	OSAdjustment
 		 * @return
 		 */
-		override public function getDevicePixelDimensions(orientation:String = ORIENTATION_PORTRAIT, OSAdjustment:Boolean = true):Rectangle {
+		override public function getDevicePixelDimensions(orientation:String = "", OSAdjustment:Boolean = true):Rectangle {
 			var dimensions:Rectangle = super.getDevicePixelDimensions(orientation, OSAdjustment);
 					
 			if (osVersion < 7 && OSAdjustment) {
