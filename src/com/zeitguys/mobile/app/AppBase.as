@@ -106,31 +106,11 @@ package com.zeitguys.mobile.app {
 		}
 		
 		
-		
-		/**
-		 * AppBase subclasses can override this to hook into the initialization and do other
-		 * things that should be done after the app has been added to the stage, but before the app is ready.
-		 * 
-		 * Endpoint child classes should avoid touching this altogether and use {@link /initialize()} instead.
-		 */
-		protected function init():void {
-			// Listen for EVENT_SCREEN_CHANGED, triggered by `ScreenRouter.setScreen()`
-			router.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
-			
-			// Get our AssetLoader instance, which is used by the Localizer, Router, and possibly your Screens
-			// to queue and load assets (XML, CSS, images, sourds, etc).
-			_assetLoader = AssetLoader.getInstance();
-			// If we prepare a bunch of assets to be loaded using the AssetLoader during `initialize()`, we can
-			// listen for the AssetLoader to be done loading all assets, and then start our app onAppLoaded().
-			_assetLoader.addEventListener(AssetLoaderEvent.LOADING_COMPLETE, onAppLoaded);
-		}
-		
-		
 		/**
 		 * The endpoint child app should override this to do startup activities such as set the Localizer, load the ScreenList,
-		 * and set the first Screen.
+		 * kickoff asset loading and set the first Screen (typically a Loader screen with progress bar).
 		 * 
-		 * There should be no need to call super.initialize() in the child app.
+		 * There should be no need to call super.initialize() in the child app, since we're not doing anything here.
 		 */
 		protected function initialize():void {
 			// Here are some things you might want to do in initialize()...
@@ -138,19 +118,33 @@ package com.zeitguys.mobile.app {
 			// stage.quality = StageQuality.BEST;
 			// localizer = new Localizer("path/to/xml", currentLanguage);
 			// screenList = IScreenList
+			// firstScreen = "main__loader";
 		}
 		
 		/**
+		 * Main entry point.
+		 * 
 		 * App is ready, all assets are loaded, Screens are defined. The sky is the limit.
 		 */
 		protected function appReady():void {
-			// firstScreen = "screen__id"
+			// Do stuff, or
+			// router.setScreen("bundleID__screenName");
 		}
 		
 		/**
 		 * Maybe override in child classes.
 		 * 
-		 * The app is being activated, usually from focus change / sleep. Use this method to do some things before the currentScreen is activated.
+		 * The app is being activated, either initially, after onAppLoaded(),
+		 * or subsequently from focus change / sleep. 
+		 * 
+		 * Use this method to do some things before the currentScreen is activated.
+		 * This is a good place to add any event listeners (like TimerEvents or global MouseEvents)
+		 * that you want to bind on the App and not a specific screen. Be sure to also leverage
+		 * deactivateApp() then, to remove these event listeners.
+		 * 
+		 * If you're not concerned about event listeners when the app is bricked
+		 * (ie: they would never fire), then you can just set them up in `initialize()`
+		 * 
 		 */
 		protected function activateApp():void {
 			
@@ -206,6 +200,31 @@ package com.zeitguys.mobile.app {
 			
 			initializeConfig();
 		}
+		
+		
+		
+		
+		
+		/**
+		 * NOTE: Endpoint child app classes should avoid touching this altogether and use {@link /initialize()} instead.
+		 * 
+		 * AppBase subclasses can override this to hook into the initialization and do other
+		 * things that should be done after the app has been added to the stage, but before the app is ready.
+		 * 
+		 */
+		protected function init():void {
+			// Listen for EVENT_SCREEN_CHANGED, triggered by `ScreenRouter.setScreen()`
+			router.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
+			
+			// Get our AssetLoader instance, which is used by the Localizer, Router, and possibly your Screens
+			// to queue and load assets (XML, CSS, images, sourds, etc).
+			_assetLoader = AssetLoader.getInstance();
+			// If we prepare a bunch of assets to be loaded using the AssetLoader during `initialize()`, we can
+			// listen for the AssetLoader to be done loading all assets, and then start our app onAppLoaded(),
+			// or better yet on appReady()
+			_assetLoader.addEventListener(AssetLoaderEvent.LOADING_COMPLETE, onAppLoaded);
+		}
+		
 		
 		/**
 		 * Override in child apps that need to use a custom AppConfigModel.
@@ -273,6 +292,8 @@ package com.zeitguys.mobile.app {
 		 * AppBase subclasses can override this to remove these trace statements, or perform other
 		 * functions that depend on the initial AssetLoader queue to be emptied.
 		 * 
+		 * @uses activateApp()
+		 * 
 		 * Endpoint child classes should avoid touching this and use {@link /appReady()} instead.
 		 * 
 		 * @see AssetLoader.closeQueue()
@@ -286,6 +307,8 @@ package com.zeitguys.mobile.app {
 				// trace("Total assets queued: " + event.data.numQueued);
 				// trace("Load errors: " + event.data.numErrors);
 			}
+			
+			activateApp();
 			
 			trace("App Ready!\n**************************************");
 			appReady();
