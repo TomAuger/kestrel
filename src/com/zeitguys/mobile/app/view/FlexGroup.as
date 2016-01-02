@@ -1,6 +1,5 @@
 package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.view.asset.AssetView;
-	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import flash.display.DisplayObject;
 	import flash.errors.IllegalOperationError;
 	import flash.text.TextField;
@@ -87,8 +86,8 @@ package com.zeitguys.mobile.app.view {
 		 * @return
 		 */
 		public function addAsset(asset:AssetView, parentItem:FlexItem = null, textFieldName:String = ""):FlexItem {
-			if (asset is ScreenAssetView) {
-				registerAssetWithScreen(ScreenAssetView(asset));
+			if (asset is AssetView) {
+				registerAssetWithScreen(AssetView(asset));
 			} else {
 				if (parentView is AssetView){
 					AssetView(parentView).addAsset(asset);
@@ -108,7 +107,7 @@ package com.zeitguys.mobile.app.view {
 		 * @param	asset
 		 * @return
 		 */
-		public function registerAssetWithScreen(asset:ScreenAssetView):ScreenAssetView {
+		public function registerAssetWithScreen(asset:AssetView):AssetView {
 			if (_screen) {
 				_screen.registerAsset(asset);
 			} else {

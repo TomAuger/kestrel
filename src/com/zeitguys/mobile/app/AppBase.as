@@ -1,18 +1,21 @@
 package com.zeitguys.mobile.app {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.model.AssetLoader;
+	import com.zeitguys.mobile.app.model.event.AssetLoaderEvent;
+	import com.zeitguys.mobile.app.model.MainScreenBundle;
 	import com.zeitguys.mobile.app.view.ActionSheetModalView;
 	import com.zeitguys.mobile.app.view.ModalFactory;
 	import com.zeitguys.mobile.app.view.ModalView;
 	import com.zeitguys.mobile.app.view.transition.TransitionBase;
 	import com.zeitguys.mobile.app.view.ViewBase;
 	import com.zeitguys.mobile.app.model.AppConfigModel;
-	import com.zeitguys.mobile.app.model.ScreenRouter;
+	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.IScreenList;
 	import com.zeitguys.mobile.app.model.Localizer;
 	import com.zeitguys.mobile.app.view.transition.TransitionManagerBase;
 	import com.zeitguys.util.ClipUtils;
+	import com.zeitguys.util.DebugUtils;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.desktop.NativeApplication;
 	import flash.display.DisplayObject;
@@ -53,14 +56,23 @@ package com.zeitguys.mobile.app {
 		public static const APP_STATE_DEACTIVATED:String = "deactivated";
 		public static const APP_STATE_SUSPENDING:String = "suspending";
 		public static const APP_STATE_PAUSED:String = "paused";
+		public static const APP_STATE_ERROR:String = "error";
 		
 		public static const DEVICE_MODEL_SIMULATOR:String = "simulator";
 		
-		protected var _screenList:IScreenList; // Set this within child class constructor
+		private const ERROR_CONFIG_LOAD_ERROR:uint = 1;
+		
+		
+		protected var _supportsAutoOrients:Boolean = true;
+		protected var _defaultLanguageCode:String = "en_US";
+		protected var _resumeAppDelayFrames:uint = 0;
+		protected var _sleepFrames:uint = 0;
+		
+		
+		
+		
 		protected var _currentScreen:ScreenView;
 		protected var _nextScreen:String;
-		
-		protected var _screenRouter:ScreenRouter;
 		
 		protected var _modalFactory:ModalFactory;
 		protected var _currentModal:ModalView;
@@ -71,8 +83,9 @@ package com.zeitguys.mobile.app {
 		
 		protected var _theme:Object;
 		
-		protected var _resumeAppDelayFrames:uint = 0;
-		protected var _sleepFrames:uint = 0;
+		protected var localizer:Localizer;
+		protected var _screenRouter:ScreenRouter;
+		
 		
 		private var _deviceSize:Rectangle;
 		private var _osVersion:uint;
@@ -80,47 +93,58 @@ package com.zeitguys.mobile.app {
 		private var _appState:String;
 		private var _inTransition:Boolean = false;
 		
+		
 		private var _transitionManager:TransitionManagerBase;
-		
-		
-		
-		protected var _supportsAutoOrients:Boolean = true;
-		
-		protected var localizer:Localizer;
+		private var _assetLoader:AssetLoader;
 		
 		public function AppBase() {
 			super();
 			
 			stopAllMovieClips();
 			
-			_screenRouter = ScreenRouter.getInstance();
-			_screenRouter.app = this;
-			
 			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage, false, 0, true);
 		}
 		
+		
+		
 		/**
-		 * App base classes that inherit from AppBase can override this to hook into the initialization and do other
+		 * AppBase subclasses can override this to hook into the initialization and do other
 		 * things that should be done after the app has been added to the stage, but before the app is ready.
 		 * 
 		 * Endpoint child classes should avoid touching this altogether and use {@link /initialize()} instead.
 		 */
 		protected function init():void {
-			ViewBase.setApp(this);
+			// Listen for EVENT_SCREEN_CHANGED, triggered by `ScreenRouter.setScreen()`
+			router.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
+			
+			// Get our AssetLoader instance, which is used by the Localizer, Router, and possibly your Screens
+			// to queue and load assets (XML, CSS, images, sourds, etc).
+			_assetLoader = AssetLoader.getInstance();
+			// If we prepare a bunch of assets to be loaded using the AssetLoader during `initialize()`, we can
+			// listen for the AssetLoader to be done loading all assets, and then start our app onAppLoaded().
+			_assetLoader.addEventListener(AssetLoaderEvent.LOADING_COMPLETE, onAppLoaded);
 		}
 		
 		
 		/**
-		 * The endpoint child app should override this to do startup activities such as set the Localizer, load the ScreenList, define the transitionManager and set the first Screen.
+		 * The endpoint child app should override this to do startup activities such as set the Localizer, load the ScreenList,
+		 * and set the first Screen.
 		 * 
 		 * There should be no need to call super.initialize() in the child app.
 		 */
 		protected function initialize():void {
-			trace("Abstract method initialize() should be over-ridden in child App classes.");
+			// Here are some things you might want to do in initialize()...
 			
-			//localizer = new Localizer()
-			//screenList = IScreenList
-			//firstScreen = "screen__id"
+			// stage.quality = StageQuality.BEST;
+			// localizer = new Localizer("path/to/xml", currentLanguage);
+			// screenList = IScreenList
+		}
+		
+		/**
+		 * App is ready, all assets are loaded, Screens are defined. The sky is the limit.
+		 */
+		protected function appReady():void {
+			// firstScreen = "screen__id"
 		}
 		
 		/**
@@ -146,17 +170,22 @@ package com.zeitguys.mobile.app {
 		
 		
 		
-		//-----------------------------------------------------------------------------------------------------
+		//****************************************************************************-----
 		
 		
 		/**
-		 * Handles all pre-initialization of app. Calls {@link /appReady()} after config file has loaded.
+		 * Handles all pre-initialization of app. Calls {@link /onConfigLoaded()} after config file has loaded.
 		 * @param	event
 		 */
 		protected function onAddedToStage(event:Event):void {
 			removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 			
-			stage.quality = StageQuality.BEST;
+			// Register this app with ViewBase, so all Views get access to an `app` getter for convenience.
+			trace("Registering App with ViewBase.");
+			ViewBase.setApp(this);
+			// Register the app with MainScreenBundle, so client apps don't need to worry about that when implementing IScreenList.
+			trace("Registering App with MainScreenBundle.");
+			MainScreenBundle.setApp(this);
 			
 			if (_supportsAutoOrients) {
 				stage.align = StageAlign.TOP_LEFT;
@@ -175,11 +204,91 @@ package com.zeitguys.mobile.app {
 			
 			init();
 			
-			if (!_appConfig) {
-				_appConfig = new AppConfigModel(_appConfigFileURL);
+			initializeConfig();
+		}
+		
+		/**
+		 * Override in child apps that need to use a custom AppConfigModel.
+		 */
+		protected function initializeConfig():void {
+			_appConfig = new AppConfigModel(appConfigURL);
+			
+			// Load the app config, or jump straight to onConfigLoaded().
+			if (appConfigURL) {
+				trace("Loading AppConfig from '" + appConfigURL + "'.");
+				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+				_appConfig.load();
+			} else {
+				onConfigLoaded();
 			}
-			_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, appReady);
-			_appConfig.load();
+		}
+		
+		
+		/**
+		 * Child apps can override this if they want to allow Config to be optional.
+		 * As it is, a missing config XML file or stream error will cause the app to halt.
+		 * 
+		 * @param	event
+		 */
+		protected function onConfigError(event:Event):void {
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+			
+			appState = APP_STATE_ERROR;
+			
+			trace("App Error: Config File couldn't be loaded.");
+			
+			// May not work on iOS
+			NativeApplication.nativeApplication.exit(ERROR_CONFIG_LOAD_ERROR);
+		}
+		
+		
+		
+		/**
+		 * The app has been added to the stage and the config file is loaded. The app is ready to start loading screens and logic.
+		 * 
+		 * @param	event
+		 */
+		protected function onConfigLoaded(event:Event = null):void {
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+			
+			appState = APP_STATE_READY;
+			
+			initAppStateHandling();
+			
+			trace("App Initializing\n**************************************");
+			
+			initialize();
+			
+			if (assetLoader.complete) {
+				onAppLoaded();
+			}
+		}
+		
+		
+		
+		/**
+		 * AppBase subclasses can override this to remove these trace statements, or perform other
+		 * functions that depend on the initial AssetLoader queue to be emptied.
+		 * 
+		 * Endpoint child classes should avoid touching this and use {@link /appReady()} instead.
+		 * 
+		 * @see AssetLoader.closeQueue()
+		 * 
+		 * @param	event
+		 */
+		protected function onAppLoaded(event:AssetLoaderEvent = null):void {
+			if (event){
+				trace("All initial app assets loaded.");
+				// We can get more out of event.data (see AssetLoader.closeQueue), eg:
+				// trace("Total assets queued: " + event.data.numQueued);
+				// trace("Load errors: " + event.data.numErrors);
+			}
+			
+			trace("App Ready!\n**************************************");
+			appReady();
 		}
 		
 		/**
@@ -244,10 +353,22 @@ package com.zeitguys.mobile.app {
 		
 		
 		/**
-		 * Child apps should use this method to set the URL of their config XML file, if one is needed.
+		 * Child apps can use this method to set the URL of their config XML file, if one is needed.
+		 * It must be set during `init` or earlier, as the appConfigModel is instantiated during `onAddedToStage`.
+		 * 
+		 * An alternate method is to simply override the getter to provide the hard-coded URL. 
+		 * @see get appConfigURL()
 		 */
 		protected function set appConfigURL(appConfigFileURL:String):void {
 			_appConfigFileURL = appConfigFileURL;
+		}
+		
+		/**
+		 * Child apps can override this to hard-code the config XML file's URL,
+		 * or you can set `appConfigURL` at init() or even within the App's constructor.
+		 */
+		protected function get appConfigURL():String {
+			return _appConfigFileURL;
 		}
 		
 		
@@ -280,23 +401,20 @@ package com.zeitguys.mobile.app {
 			return _deviceSize.height;
 		}
 		
-		
-		/**
-		 * The app has been added to the stage and the config file is loaded. The app is ready to start loading screens and logic.
-		 * 
-		 * @param	event
-		 */
-		protected function appReady(event:Event):void {
-			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, appReady);
-			
-			appState = APP_STATE_READY;
-			
-			initAppStateHandling();
-			
-			trace("App Initializing\n------------------------------------------------");
-			
-			initialize();
+		public function get assetLoader():AssetLoader {
+			return _assetLoader;
 		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 		/**
 		 * Sets up all the event listeners our app will need to behave responsibly within the iOS ecosystem...
@@ -313,7 +431,9 @@ package com.zeitguys.mobile.app {
 		/**
 		 * This function initializes the resume delay timer if one is needed.
 		 */
-		protected function beginResumeApp( event:Event ):void {
+		protected function beginResumeApp(event:Event):void {
+			// In the simulator, this event is fired (don't know why), so we check first
+			// to make sure that the app actually has a state that we would be resuming from.
 			if (appState == APP_STATE_DEACTIVATED || appState == APP_STATE_PAUSED || appState == APP_STATE_SUSPENDING){
 				trace( "BEGINNING RESUME APP." );
 				// Make sure we stop our sleep counter
@@ -325,8 +445,6 @@ package com.zeitguys.mobile.app {
 				} else {
 					resumeApp();
 				}
-			} else {
-				trace( "FALSE 'resume app' APP STATE event sent - ignoring. Are you Debugging in simulator? " );
 			}
 		}
 		
@@ -474,13 +592,11 @@ package com.zeitguys.mobile.app {
 		
 		public function set inTransition(transitioning:Boolean):void {
 			_inTransition = transitioning;
-			
-			trace("APP TRANSITION STATE:", _inTransition);
 		}
 		
-		//--------------------------------------------------------------------------------------------------------
+		//****************************************************************************--------
 		// MODAL DIALOG BOXES
-		// -------------------------------------------------------------------------------------------------------
+		// ****************************************************************************-------
 		
 		public function set modalFactory(Factory:Class):void {
 			if (ObjectUtils.inheritsFrom(Factory, ModalFactory)) {
@@ -559,28 +675,26 @@ package com.zeitguys.mobile.app {
 		 * and TransitionManager is a child of the main SWF.
 		 */
 		public function set screenList(list:IScreenList):void {
-			_screenList = list;
-			_screenRouter.processScreenList(_screenList);
+			router.processScreenList(list);
 			
 			initializeTransitionManager();
 		}
 		
 		/**
-		 * Used by the App to set the first (usually "loading") screen.
-		 * Also sets up the event listener, which is really important if you want to be able to do something visually
-		 * when the router changes screens.
+		 * @usedby ScreenView.get router()
 		 */
-		public function set firstScreen(screenID:String):void {
-			_screenRouter.addEventListener(ScreenRouter.EVENT_SCREEN_CHANGED, onScreenChange, false, 0, true);
-			_screenRouter.setScreen(screenID, false);
-		}
-		
 		public function get router():ScreenRouter {
+			if (! _screenRouter) {
+				_screenRouter = new ScreenRouter(this);
+			}
+			
 			return _screenRouter;
 		}
 		
 		/**
-		 * Defines the transition manager used in this app. Called by `set screenList()`.
+		 * Defines the transition manager used in this app and adds it to the display list via {@link set screenList()}
+		 * 
+		 * Call this AFTER ScreenRouter.processScreenList(), which strips all children out of the main SWF.
 		 * 
 		 * Override in child apps that need to use a custom TransitionManager.
 		 */
@@ -617,7 +731,7 @@ package com.zeitguys.mobile.app {
 			inTransition = true;
 			
 			_transitionManager.addEventListener(TransitionManagerBase.EVENT_TRANSITION_COMPLETE, onTransitionComplete);
-			_transitionManager.transition(_screenRouter.currentScreen);
+			_transitionManager.transition(router.currentScreen);
 		}
 		
 		private function onTransitionComplete(event:Event):void {
@@ -630,7 +744,7 @@ package com.zeitguys.mobile.app {
 				
 			}
 			
-			screenTransitionComplete(_screenRouter.currentScreen);
+			screenTransitionComplete(router.currentScreen);
 		}
 		
 		/**
@@ -655,7 +769,7 @@ package com.zeitguys.mobile.app {
 		
 		// ========================================================================================================
 		// LOCALIZATION
-		// --------------------------------------------------------------------------------------------------------
+		// ========================================================================================================
 		
 		
 		
@@ -674,46 +788,28 @@ package com.zeitguys.mobile.app {
 		 */
 		public function localize(target:ILocalizable):void {
 			if (localizer) {
-				//var success:Boolean = target.localize(localizer);
 				localizer.localize(target);
 			}
 		}
 		
-		public function changeLanguage(language:String, nextScreen:String = ''):void {
+		public function changeLanguage(languageCode:String, nextScreen:String = ''):void {
 			_nextScreen = nextScreen;
+			
 			localizer.addEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
-			localizer.language = language;
-			_appConfig.currentLanguage = localizer.language;
+			localizer.setLanguageWithFallback(languageCode);
 		}
 		
 		protected function onLanguageChanged(e:Event):void {
 			localizer.removeEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
+			
 			dispatchEvent(new Event(EVENT_LANGUAGE_CHANGED));
-			var loader:AssetLoader = AssetLoader.getInstance();
-			trace(loader.queue);
-			if (loader.queue) {
-				router.setScreen('main__loader');
-			} else {
-				router.setScreen(_nextScreen);
-			}
 		}
 		
 		/**
-		 * Access the current language of the localizer.
+		 * Access the current language of the app.
 		 */
 		public function get currentLanguage():String {
-			if (localizer) {
-				return localizer.language;
-			}
-			
-			return "";
-		}
-		
-		/**
-		 * Change the current language of the app.
-		 */
-		public function set currentLanguage(language:String):void {
-			localizer.language = language;
+			return _appConfig.currentLanguage || _defaultLanguageCode;
 		}
 		
 		
@@ -732,6 +828,12 @@ package com.zeitguys.mobile.app {
 		
 		public function get styleSheet():StyleSheet {
 			return _appConfig.styleSheet;
+		}
+		
+		protected function loadStylesheet(stylesheetURL:String):void {
+			if (_appConfig) {
+				_appConfig.loadStyleSheet(stylesheetURL);
+			}
 		}
 		
 		

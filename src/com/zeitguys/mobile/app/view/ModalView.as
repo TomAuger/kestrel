@@ -1,4 +1,4 @@
-package com.zeitguys.mobile.app.view {
+﻿package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.vo.ModalButtonData;
@@ -14,6 +14,7 @@ package com.zeitguys.mobile.app.view {
 	import flash.text.TextFieldAutoSize;
 	import flash.text.TextFormat;
 	import flash.utils.Dictionary;
+	import flash.utils.getDefinitionByName;
 	
 	/**
 	 * ...
@@ -28,9 +29,11 @@ package com.zeitguys.mobile.app.view {
 		
 		public static const ALIGNMENT_CENTERED:String = 'alignment-centered';
 		
-		protected var _parent:DisplayObjectContainer;
+		protected var _parentClip:DisplayObjectContainer;
+		protected var _ModalClass:Class;
+		
 		protected var _bodyText:TextField;
-		protected var _bg:MovieClip;
+		protected var _bg:DisplayObject;
 		
 		protected var _flexGroup:FlexGroup = new FlexGroup;
 		
@@ -38,8 +41,38 @@ package com.zeitguys.mobile.app.view {
 		protected var _buttonLookup:Object = { };
 		protected var _pressedButton:String;
 		
-		public function ModalView(parentClip:DisplayObjectContainer, bodyText:String, buttons:Vector.<ModalButtonData> = null ) {
-			_parent = parentClip;
+		public static var __instanceNumber:uint = 0;
+		
+		public function ModalView(parentClip:DisplayObjectContainer, modalClip:* = null, bodyText:String = "", buttons:Vector.<ModalButtonData> = null ) {
+			_parentClip = parentClip;
+			
+			if (modalClip is DisplayObject) {
+				_setClip(DisplayObject(modalClip));
+				trace("Getting modal UI from DisplayObject '" + name + "'");
+			} else if (modalClip is String) {
+				// Check if it's a library item
+				_ModalClass = getDefinitionByName(modalClip) as Class;
+				if (_ModalClass && _ModalClass is Class) {
+					_setClip(new _ModalClass());
+					setClipName(modalClip + "_" + __instanceNumber++);
+					
+					trace("Getting modal UI from Library Item (Class) '" + modalClip + "'");
+				} else {
+					// It's not a Library item, so maybe it's a child of the parent clip?
+					var modalClipObj:DisplayObject = getDescendantByName(modalClip);
+					if (modalClipObj && modalClipObj is DisplayObject) {
+						// Success. Detach it from the parent and remove it from the DisplayList
+						_setClip(modalClipObj);
+						_parentClip.removeChild(clip);
+						
+						trace("Getting modal UI from child DisplayObject '" + name + "'");
+					}
+				}
+			}
+			
+			if (! clip){
+				throw new ArgumentError("Constructor argument 'clip' must be a Library Item (Class name), a DisplayObject instance name (String) or an actual DisplayObject instance");
+			}
 			
 			defineTextFields();
 			defineButtons(buttons);
@@ -47,7 +80,7 @@ package com.zeitguys.mobile.app.view {
 			
 			defineFlexItems();
 			
-			populateModal(bodyText, buttons);
+			populateModal(bodyText);
 			updateFlexGroup();
 			alignModal(alignmentMode);
 			
@@ -103,7 +136,9 @@ package com.zeitguys.mobile.app.view {
 		 * Maybe override in child classes if you need, for example, a Header as well as a Body text.
 		 */
 		protected function defineTextFields():void {
-			_bodyText = new TextField();
+			if (clip is DisplayObjectContainer){
+				_bodyText = getDescendantByName("body", DisplayObjectContainer(clip)) as TextField;
+			}
 		}
 		
 		/**
@@ -142,13 +177,14 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
-		 * Override in child classes. Creates the button MovieClip, or gets it from the _clip.
+		 * Override in child classes if you need to work with a Library item or dig through a nested
+		 * DisplayObject hierarchy.
 		 * 
 		 * @param	buttonID
 		 * @return
 		 */
 		protected function createButtonClip(buttonID:String):MovieClip {
-			return new MovieClip;
+			return MovieClip(getRequiredChildByName(buttonID, MovieClip));
 		}
 		
 		/**
@@ -157,7 +193,9 @@ package com.zeitguys.mobile.app.view {
 		 * In order for the background to scale properly, make sure it is 9-sliced if it has non-square corners.
 		 */
 		protected function defineBackground():void {
-			_bg = new MovieClip;
+			if (clip is DisplayObjectContainer) {
+				_bg = getDescendantByName("bg", DisplayObjectContainer(clip));
+			}
 		}
 		
 		/**
@@ -231,6 +269,10 @@ package com.zeitguys.mobile.app.view {
 			return 2;
 		}
 		
+		override public function get parentClip():DisplayObjectContainer {
+			return _parentClip;
+		}
+		
 		/**
 		 * Maybe override in child classes if you have additional text fields that you
 		 * need to populate or have some really custom button code that doesn't match
@@ -242,18 +284,19 @@ package com.zeitguys.mobile.app.view {
 		 * @see /setTextFieldContent() for a good way to actually set the text and keep the formatting.
 		 * 
 		 * @param	bodyText
-		 * @param	buttons
 		 */
-		protected function populateModal(bodyText:String, buttons:Object):void {
+		protected function populateModal(bodyText:String):void {
 			var buttonData:ModalButtonData,
 				labelTextField:TextField;
-			
 			
 			setBodyText(bodyText);
 	
 			for each (buttonData in _buttons) {
-				labelTextField = TextField(getRequiredChildByName("label", TextField, buttonData.clip));
-				TextUtils.setTextFieldContent(labelTextField, buttonData.label);
+				labelTextField = getDescendantByName("label", buttonData.clip) as TextField;
+				
+				if (labelTextField){
+					TextUtils.setTextFieldContent(labelTextField, buttonData.label);
+				}
 			}
 		}
 		
@@ -271,14 +314,22 @@ package com.zeitguys.mobile.app.view {
 		 * 
 		 * Alignment calculations are based on top left registration.
 		 * 
+		 * @TODO support additional alignments
+		 * 
 		 * @param	alignment
 		 */
-		protected function alignModal(alignment:String):void {
+		protected function alignModal(alignment:String):void { trace("s", parentClip.scaleX);
+			var parentWidth:Number = parentClip.stage ? parentClip.stage.stageWidth / 2 : parentClip.width / 2;
+			var parentHeight:Number = parentClip.stage ? parentClip.stage.stageHeight / 2 : parentClip.height / 2;
+			
+			parentWidth /= parentClip.scaleX;
+			parentHeight /= parentClip.scaleY;
+			
 			switch(alignment) {
 				// May need to take status bar into account for iOS6
 				case ALIGNMENT_CENTERED :
-					_clip.x = _parent.stage.stageWidth / 2 - (_clip.width / 2);
-					_clip.y = _parent.stage.stageHeight / 2 - (_clip.height / 2);
+					clip.x = parentWidth - (clip.width / 2);
+					clip.y = parentHeight - (clip.height / 2);
 					break;
 				default :
 					throw new RangeError("'" + alignment + "' is not a recognized Modal alignment.");
@@ -341,14 +392,14 @@ package com.zeitguys.mobile.app.view {
 		 * Override in child classes to actually turn the MovieClips on, or add them to the displayList.
 		 */
 		protected function displayModal():void {
-			
+			parentClip.addChild(clip);
 		}
 		
 		/**
 		 * Override in child classes to turn off the MovieClips and remove them from the displayList.
 		 */
 		protected function removeModal():void {
-			
+			parentClip.removeChild(clip);
 		}
 		
 		/**
@@ -449,8 +500,9 @@ package com.zeitguys.mobile.app.view {
 			deactivate();
 			
 			_buttons = null;
-			_clip = null;
 			_pressedButton = "";
+			
+			_setClip(null);
 		}
 		
 		public function get buttons():Vector.<ModalButtonData> {
@@ -488,7 +540,7 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		public function setBodyText(bodyText):void {
-			if (_bodyText && bodyText){
+			if (bodyText && _bodyText is TextField){
 				TextUtils.setTextFieldContent(_bodyText, bodyText);
 			}
 		}

@@ -22,19 +22,21 @@ package com.zeitguys.mobile.app.view.asset
 		
 		protected var _numberFormatter:NumberFormatter;
 		
-		protected var _initialized:Boolean = false;
-		protected var _active:Boolean = false;
-		protected var _disabled:Boolean = false;
 		
 		protected var _textFieldName:String;
 		protected var _textField:TextField;
 		
+		
+		private var _initialized:Boolean = false;
+		private var _active:Boolean = false;
+		private var _disabled:Boolean = false;
+		
 		public function AssetView(assetClip:*, disabled:Boolean = false, localizableTextFieldName:String = "") {
 			if (assetClip is DisplayObject) {
-				_clipName = DisplayObject(assetClip).name;
-				clip = assetClip;
+				setClipName(DisplayObject(assetClip).name);
+				_setClip(DisplayObject(assetClip));
 			} else if (assetClip is String) {
-				_clipName = assetClip;
+				setClipName(assetClip);
 			} else {
 				throw new ArgumentError("Constructor argument 'clip' must be a DisplayObject instance name (String) or an actual DisplayObject instance");
 			}
@@ -54,17 +56,64 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * This may happen only once, event if the assets is accessed multiple times.
 		 * 
-		 * @usedby set clip() Once we actually have a clip (either because a DisplayObject was passed in the constructor, or the clip has been set by the parent asset/screen).
+		 * @usedby _setClip() Once we actually have a clip (either because a DisplayObject was passed in the constructor, or the clip has been set by the parent asset/screen).
 		 * 
 		 * Consider waiting for {@link #activate()} before defining event listeners.
 		 */
 		public function init():void {
-				
+			
 			// Generally, we assume assets are built enabled. So, we only call onDisabled(), not onEnabled();
 			if (_disabled) {
-				trace("  / " + _clipName + " starting DISABLED");
+				trace("  / " + name + " starting DISABLED");
 				onDisabled();
 			}
+		}
+		
+		
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is disabled.
+		 */
+		protected function onDisabled() {
+			
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is (re-)enabled
+		 */
+		protected function onEnabled() {
+			
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is shown. Currently does not include when the
+		 * asset is first initialized.
+		 * 
+		 * @see show()
+		 * 
+		 * Hook your "show" animations here.
+		 */
+		protected function onShow() {
+			clip.visible = true;
+		}
+		
+		/**
+		 * Override in child classes.
+		 * 
+		 * Updates the visual style of the asset when it is hidden.
+		 * 
+		 * @see hide()
+		 * 
+		 * Hook your "hide" animations here.
+		 */
+		protected function onHide() {
+			clip.visible = false;
 		}
 		
 		/**
@@ -75,6 +124,27 @@ package com.zeitguys.mobile.app.view.asset
 		public function setupBeforeLocalize():void {
 			for each (var asset:AssetView in _childAssets) {
 				asset.setupBeforeLocalize();
+			}
+		}
+		
+		
+		override public function localize(localizer:Localizer):void {
+			trace("  Localizing Asset '" + name + "'");
+			
+			_numberFormatter = localizer.numberFormatter;
+			
+			if (_textFieldName && _textField) {
+				if (setText(_textField, getAssetComponentText(localizer, _textFieldName))) {
+					trace("    Localized Field '" + _textFieldName + "'");
+				} else {
+					trace("    Could not localize Field '" + _textFieldName + "'");
+				}
+			}
+			
+			if (_childAssets.length) {
+				for each (var childAsset:AssetView in _childAssets) {
+					childAsset.localize(localizer);
+				}
 			}
 		}
 		
@@ -107,24 +177,6 @@ package com.zeitguys.mobile.app.view.asset
 			}
 		}
 		
-		/**
-		 * Override in child classes.
-		 * 
-		 * Updates the visual style of the asset when it is disabled.
-		 */
-		protected function onDisabled() {
-			
-		}
-		
-		/**
-		 * Override in child classes.
-		 * 
-		 * Updates the visual style of the asset when it is (re-)enabled
-		 */
-		protected function onEnabled() {
-			
-		}
-		
 		
 		
 		
@@ -154,12 +206,12 @@ package com.zeitguys.mobile.app.view.asset
 					
 					_active = true;
 					
-					trace("  + " + _clipName + " ACTIVATED");
+					trace("  + " + name + " ACTIVATED");
 				} else {
-					trace("  + " + _clipName + " NOT activated (disabled)");
+					trace("  . " + name + " NOT activated (disabled)");
 				}
 			} else {
-				trace("  + " + _clipName + " SKIPPING activation");
+				trace("  . " + name + " SKIPPING activation");
 			}
 		}
 		
@@ -174,11 +226,12 @@ package com.zeitguys.mobile.app.view.asset
 				for each (var childAsset:AssetView in _childAssets) {
 					childAsset.deactivate();
 				}	
+				
 				_active = false;
 				
-				trace("  - " + _clipName + " DEACTIVATED");
+				trace("  - " + name + " DEACTIVATED");
 			} else {
-				trace("  - " + _clipName + " SKIPPING deactivation");
+				trace("  . " + name + " SKIPPING deactivation");
 			}
 		}
 		
@@ -188,19 +241,17 @@ package com.zeitguys.mobile.app.view.asset
 		 * If the asset has already been initialized
 		 */
 		public function disable():void {
-			if (! _disabled){
+			if (! _disabled) {
+				deactivate();
+				
+				// See enable() for why we don't disable child assets atomatically.
 				
 				_disabled = true;
-				
 				onDisabled();
 				
-				trace("  - " + id + " DISABLED");
-				
-				if (_active) {
-					deactivate();
-				}
+				trace("  - " + name + " DISABLED");
 			} else {
-				trace("  - " + id + " DISABLE skipped (already disabled)");
+				trace("  . " + name + " DISABLE skipped (already disabled)");
 			}
 		}
 		
@@ -214,35 +265,38 @@ package com.zeitguys.mobile.app.view.asset
 			if (_disabled) { 
 				_disabled = false;
 				
+				// We don't automatically enable child assets when the parent is enabled
+				// because a child asset may have been deiberately deactivated.
+				
+				// Child classes can override and enable child assets manually.
+				
 				onEnabled();
 				
-				trace("  + " + id + " ENABLED");
+				trace("  + " + name + " ENABLED");
 				
 				if (! _active) {
 					activate();
 				}
 			} else {
-				trace("  + " + id + " ENABLE skipped (already enabled)");
+				trace("  . " + name + " ENABLE skipped (already enabled)");
 			}
 		}
 		
 		public function show(enable:Boolean = true):void {
-			if (enable && _disabled) {
-				this.enable(); // WHY do we need 'this' here???
+			if (enable) {
+				this.enable();
 			}
 			
-			if (_clip) {
-				_clip.visible = true;
+			if (clip) {
+				onShow();
 			}
 		}
 		
-		public function hide(disable:Boolean = true):void {
-			if (disable && ! _disabled) {
-				this.disable();
-			}
+		public function hide():void {
+			disable();
 			
-			if (_clip) {
-				_clip.visible = false;
+			if (clip) {
+				onHide();
 			}
 		}
 		
@@ -258,13 +312,17 @@ package com.zeitguys.mobile.app.view.asset
 			return ! _disabled;
 		}
 		
+		public function get isDisabled():Boolean {
+			return _disabled;
+		}
+		
 		/**
 		 * Shortcut to make for easier reading `activate()` overrides.
 		 * 
 		 * Child classes should test against `activatable()` before performing any
 		 * activate activities such as adding event listeners.
 		 */
-		public function get activatable():Boolean {
+		public function get isActivatable():Boolean {
 			return !_active && !_disabled;
 		}
 		
@@ -272,8 +330,8 @@ package com.zeitguys.mobile.app.view.asset
 		 * Convenience getter. Child classes can test against this as a best practice
 		 * before performing any `deactivate()` tasks, just to avoid doing redundant work.
 		 */
-		public function get deactivatable():Boolean {
-			return _active;
+		public function get isDeactivatable():Boolean {
+			return isActive;
 		}
 		
 		
@@ -285,18 +343,7 @@ package com.zeitguys.mobile.app.view.asset
 		}
 		
 		
-		/**
-		 * Associate the appropriate DisplayObject with this asset, based on the clipName that was passed in the constructor.
-		 * 
-		 * @return
-		 */
-		protected function findClip(parentClip:DisplayObjectContainer):Boolean {
-			if (! _clip){
-				clip = getRequiredChildByName(_clipName, null, parentClip);
-			}
-			
-			return true;
-		}
+		
 		
 		/**
 		 * Sets the DisplayObject that this Asset is associated with. This is generally
@@ -306,20 +353,20 @@ package com.zeitguys.mobile.app.view.asset
 		 * 
 		 * @uses init() if the clip has not yet been initialized, will call {@link init()}, to kick off asset definition.
 		 */
-		override public function set clip(clipDisplayObject:DisplayObject):void {
-			super.clip = clipDisplayObject;
+		override protected function _setClip(clipDisplayObject:DisplayObject):void {
+			super._setClip(clipDisplayObject);
 			
-			if (_textFieldName && _clipName !== _textFieldName && clip is DisplayObjectContainer) {
-				_textField = TextField(getRequiredChildByName(_textFieldName, TextField, DisplayObjectContainer(_clip)));
+			if (_textFieldName && name !== _textFieldName && clip is DisplayObjectContainer) {
+				_textField = TextField(getRequiredChildByName(_textFieldName, TextField, DisplayObjectContainer(clip)));
 			} else {
-				if (_clip is TextField) {
-					_textField = TextField(_clip);
+				if (clip is TextField) {
+					_textField = TextField(clip);
 				}
 			}
 			
 			// Store the clip's original coords.
-			_clipOrigX = _clip.x;
-			_clipOrigY = _clip.y;
+			_clipOrigX = clip.x;
+			_clipOrigY = clip.y;
 			
 			if (! _initialized) {
 				init();
@@ -327,31 +374,13 @@ package com.zeitguys.mobile.app.view.asset
 			}
 		}
 		
-		/**
-		 * Sets the parent AssetView, and if the clip has been deferred (such as when the AssetView is instantiated
-		 * with just the instance name of the clip, instead of the actual clip), then will attempt to set the clip
-		 * by searching through the parentAsset's clip's display hierarchy.
-		 */
-		public function set parentAsset(asset:AssetView):void {
-			_parentAsset = asset;
-			
-			if (! _clip) {
-				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
-					clip = _parentAsset.getRequiredChildByName(_clipName);
-				} else {
-					throw new IllegalOperationError("Setting parentAsset, but the parentAsset's clip has not yet been set.");
-				}
-			}
-			
-			_parentScreen = _parentAsset.screen;
-		}
-		
-		public function get parentAsset():AssetView {
-			return _parentAsset;
-		}
-		
 		public function get screen():ScreenView {
 			return _parentScreen;
+		}
+		
+		public function set screen(parentScreen:ScreenView):void {
+			_parentScreen = parentScreen;
+			_setClip(getRequiredChildByName(name, DisplayObject, DisplayObjectContainer(parentScreen.clip)));
 		}
 		
 		/**
@@ -368,6 +397,7 @@ package com.zeitguys.mobile.app.view.asset
 				child = this;
 			}
 			
+			// Is this screen a direct child of a ScreenView?
 			if (child.screen) {
 				_parentScreen = child.screen;
 				return child.screen;
@@ -381,22 +411,29 @@ package com.zeitguys.mobile.app.view.asset
 		}
 		
 		
-		override public function localize(localizer:Localizer):void {
-			trace("Localizing Asset '" + id + "'");
+		/**
+		 * Sets the parent AssetView, and if the clip has been deferred (such as when the AssetView is instantiated
+		 * with just the instance name of the clip, instead of the actual clip), then will attempt to set the clip
+		 * by searching through the parentAsset's clip's display hierarchy.
+		 */
+		public function set parentAsset(asset:AssetView):void {
+			_parentAsset = asset;
 			
-			_numberFormatter = localizer.numberFormatter;
-			
-			if (_textFieldName && _textField) {
-				setText(_textField, getAssetComponentText(localizer, _textFieldName));
-			}
-			
-			if (_childAssets.length) {
-				for each (var childAsset:AssetView in _childAssets) {
-					childAsset.localize(localizer);
+			if (! hasClip) {
+				if (_parentAsset.clip && _parentAsset.clip is DisplayObjectContainer) {
+					_setClip(parentAsset.getRequiredChildByName(name));
+				} else {
+					throw new IllegalOperationError("Attempting to set parentAsset, but the parentAsset's clip has not yet been set.");
 				}
 			}
 			
-			super.localize(localizer);
+			if (_parentAsset.screen) {
+				screen = _parentAsset.screen;
+			}
+		}
+		
+		public function get parentAsset():AssetView {
+			return _parentAsset;
 		}
 		
 		/**
@@ -415,7 +452,7 @@ package com.zeitguys.mobile.app.view.asset
 			var parentScreen:ScreenView = getParentScreen(this);
 			
 			if (parentScreen){
-				return localizer.getAssetComponentText(parentScreen.bundle.id, parentScreen.name, id, component, componentID);
+				return localizer.getAssetComponentText(parentScreen.bundle.id, parentScreen.name, name, component, componentID);
 			} else {
 				throw new IllegalOperationError("Calling getAssetComponentText() on an asset that is not attached to any screen.");
 			}

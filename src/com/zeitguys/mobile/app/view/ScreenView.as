@@ -1,6 +1,6 @@
-package com.zeitguys.mobile.app.view {
+﻿package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.AppBase;
-	import com.zeitguys.mobile.app.model.ScreenRouter;
+	import com.zeitguys.mobile.app.controller.ScreenRouter;
 	import com.zeitguys.mobile.app.model.ILocalizable;
 	import com.zeitguys.mobile.app.model.Localizer;
 	import com.zeitguys.mobile.app.model.ScreenBundle;
@@ -8,7 +8,6 @@ package com.zeitguys.mobile.app.view {
 	import com.zeitguys.mobile.app.view.asset.AssetView;
 	import com.zeitguys.mobile.app.view.transition.TransitionBase;
 	import com.zeitguys.mobile.app.view.ViewBase;
-	import com.zeitguys.mobile.app.view.asset.ScreenAssetView;
 	import com.zeitguys.util.ObjectUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -22,7 +21,7 @@ package com.zeitguys.mobile.app.view {
 	 * The following hooks are available for child classes to extend, throughout the lifecycle and startup of the screen:
 	 * * (Constructor): the screen is added to the queue, and usually loading of its assets starts. Generally we don't do anything here; maybe define the screen model.
 	 * 
-	 * * onClipLoaded: the screen is loaded and its clip has been transferred to _clip. Does not have access to Stage yet.
+	 * * onClipLoaded: the screen is loaded and its clip has been transferred to clip. Does not have access to Stage yet.
 	 * 
 	 * * initStage: Called ONCE per screen, when the screen clip has been added to a DisplayList. That doesn't necessarily mean that it is currently visible. However, it DOES mean that the View has access to all its DisplayObjects, so this is generally where you assign Assets
 	 * 
@@ -53,7 +52,7 @@ package com.zeitguys.mobile.app.view {
 		
 		protected var _bundle:ScreenBundle;
 		protected var _screenRouter:ScreenRouter;
-		protected var _assets:Vector.<ScreenAssetView> = new Vector.<ScreenAssetView>; // @TODO refactor to <AssetView>
+		protected var _assets:Vector.<AssetView> = new Vector.<AssetView>; // @TODO refactor to <AssetView>
 		protected var _textFields:Array = [];
 		
 		public var bundleIndex:uint;
@@ -73,20 +72,16 @@ package com.zeitguys.mobile.app.view {
 		
 		protected var _status:String = STATUS_NOT_READY;
 		
-		public function ScreenView(clip:*, bundle:ScreenBundle = null) {
+		public function ScreenView(screenClip:*, bundle:ScreenBundle = null) {
 			if (bundle) {
 				// Use the setter with all its special sauce
 				this.bundle = bundle;
 			}
 			
-			if (clip is DisplayObjectContainer) {
-				_clip = DisplayObjectContainer(clip);
-				_clipName = DisplayObjectContainer(clip).name;
-			} else if (clip is String) {
-				_clipName = String(clip);
-				if (_bundleLoaded) {
-					_clip = _bundle.getClipByName(_clipName);
-				}
+			if (screenClip is DisplayObjectContainer) {
+				_setClip(DisplayObjectContainer(screenClip)); // also sets the clip name
+			} else if (screenClip is String) {
+				setClipName(String(screenClip));
 			}
 			
 			_id = generate_id();
@@ -97,7 +92,14 @@ package com.zeitguys.mobile.app.view {
 				_TransitionOut = TransitionBase;
 			}
 			
+			// Check whether the bundle is loaded, and if so,
+			// call setClip() and if that works, change status to 
+			// STATUS_SCREEN_LOADED, and call onClipLoaded()
 			prepare();
+			
+			// If prepare() doesn't complete (because the bundle is not loaded)
+			// then prepare() must be called by the ScreenBundle.prepareScreens(),
+			// which is triggered when the ScreenBundle is loaded.
 		}
 		
 		
@@ -111,7 +113,7 @@ package com.zeitguys.mobile.app.view {
 		
 		/**
 		 * Maybe override in child classes.
-		 * The Screen's Bundle has been loaded and the MovieClip associated with this Screen has been assigned to _clip.
+		 * The Screen's Bundle has been loaded and the MovieClip associated with this Screen has been assigned to clip.
 		 * But the clip may not yet be on any stage, so don't use any reference to stage here.
 		 * 
 		 * @see #init() If you need a reference to the stage for any reason.
@@ -124,12 +126,8 @@ package com.zeitguys.mobile.app.view {
 		/**
 		 * Maybe override in child classes.
 		 * Screen has just been added to stage, possibly a long time before the screen is ever displayed or used (in the case of the main SWF's clips)
-		 * Consider using {@link #activate()} or {@link #resume()} for just-in-time initialization.
 		 * 
-		 * Generally, this is a great place to define the screen assets. Remember to do this __before__ calling super.init() so that they can be properly localized.
-		 * @see #defineAssets()
-		 * 
-		 * This is NOT a good place to initialize the model, or do things that should happen every time we (re)visit this screen, because init() may only be called ONCE.
+		 * This is NOT a good place to initialize the model, or do things that should happen _every time_ we (re)visit this screen, because init() will typically only be called ONCE.
 		 * 
 		 * Upon completion, screen will be "Ready".
 		 */
@@ -159,9 +157,9 @@ package com.zeitguys.mobile.app.view {
 		 * @TODO: refactor to work with all AssetViews not just ScreenAssetViews.
 		 */
 		public function setupBeforeLocalize():void {
-			trace(id + " SETTING UP (before localization)");
+			trace("--------------------------------------\n" + id + " SETTING UP (before localization)");
 			
-			for each (var asset:ScreenAssetView in _assets) {
+			for each (var asset:AssetView in _assets) {
 				asset.setupBeforeLocalize();
 			}
 		}
@@ -171,7 +169,7 @@ package com.zeitguys.mobile.app.view {
 		 * items as well. Just remember to call super.localize() as well!
 		 */
 		override public function localize(localizer:Localizer):void {
-			trace("Localizing Screen '" + id + "'");
+			trace("LOCALIZING Screen '" + id + "'");
 			
 			var modalID:String,
 				item:Object,
@@ -211,17 +209,29 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
+		
+		
+		/**
+		 * Abstract method. Override in child classes as needed. This is the best place to define your Screen's Modals,
+		 * using addModal().
+		 * 
+		 * @param	localizer
+		 */
+		protected function defineModals(localizer:Localizer):void {
+			
+		}
+		
 		/**
 		 * Override in child classes.
 		 * This method is called __every__ time a screen is displayed (switched to from another screen) just after localize() is run.
 		 * This is where you should do things like initialize the screen's model, and perform set-ups that should happen every time the screen is displayed.
 		 */
 		public function setupAfterLocalize():void {
-			trace(id + " SETTING UP (after localization)");
-			
-			for each (var asset:ScreenAssetView in _assets) {
+			for each (var asset:AssetView in _assets) {
 				asset.setupAfterLocalize();
 			}
+			
+			trace(id + " SETUP (after localization) COMPLETE\n--------------------------------------");
 		}
 		
 		/**
@@ -233,21 +243,142 @@ package com.zeitguys.mobile.app.view {
 		 * Use reset() if the decision whether to reset the screen needs to be made by the previous screen before switching to the current one.
 		 */
 		public function reset():void {
-			for each (var asset:ScreenAssetView in _assets) {
+			for each (var asset:AssetView in _assets) {
 				asset.reset()
 			}
 			
 			trace(id + " RESET");
 		}
 		
+		
+		
+		
 		/**
-		 * DEPRECATED
+		 * Called by AppBase.screenTransitionComplete().
+		 * 
+		 * Resets the current `TransitionOut` to the `DefaultTransition`, then calls {@link activate()}.
+		 * 
+		 * Child screens may override this to do things post transition, but prior to activation.
+		 * 
+		 * If you are running any animations on the screen after the transition, but before activation,
+		 * you may use `super.onTransitionComplete()` as your animation complete callback.
 		 */
-		public function setup():void {
-			// Echo deprecated message if a subclass tries to use this method and then calls super.setup();
-			if (arguments.callee != this.setup){
-				trace("!! setup() is DEPRECATED. Use setupBeforeLocalize() or setupAfterLocalize() instead");
+		public function onTransitionComplete():void {
+			_TransitionOut = _DefaultTransition;
+			
+			// If the app is bricked or suspending, then this will not fire.
+			if (app.isReady){
+				activate();
 			}
+		}
+		
+		/**
+		 * Override in child classes.
+		 * Screen has finished transitioning and has been activated. Note that this could happen multiple times within one screen "session" if the app is shutdown or paused.
+		 * This is where you should add any event listeners for interactivity, start animations, etc.
+		 * 
+		 * Be sure to call super.activate() at the END of your override, or you won't get automatic asset activation, which is pretty central to how this whole thing works. 
+		 * Many child classes (eg: {@link ScrollingScreenView} have built-in logic here, so, really, super.activate();
+		 */
+		public function activate():void {
+			if (! app.isModal) {
+				activateAssets();
+				
+				trace(id + " ACTIVATED\n--------------------------------------");
+			} else {
+				trace(id + " NOT ACTIVATED: currently MODAL.");
+			}
+		}
+		
+		public function activateAssets():void {
+			trace(id + " ACTIVATING Assets");
+			for each (var asset:AssetView in _assets) { 
+				asset.activate();
+			}
+		}
+		
+		/**
+		 * Override in child classes when you wnat to handle reactivation from app paused state.
+		 */
+		public function resume():void {
+			trace(id + " RESUMING");
+			
+			activate();
+		}
+		
+		/**
+		 * Called when a modal dialog is invoked on this screen.
+		 * 
+		 * Child classes can override this method in order to do something specifially
+		 * when a modal is invoked.
+		 * 
+		 * Remember to call super.enterModal().
+		 */
+		public function enterModal():void {
+			trace(id + " entering MODAL");
+			
+			deactivate();
+		}
+		
+		/**
+		 * Called when a modal dialog is dismissed on this screen.
+		 * 
+		 * Child classes can override this method in order to restore anything
+		 * that might have been halted on {@link /enterModal()}.
+		 * 
+		 * Remember to call super.exitModal().
+		 */
+		public function exitModal():void {
+			trace(id + " exiting MODAL");
+			
+			activate();
+		}
+		
+		/**
+		 * Override in child classes when you want to handle deactivation due to app pausing.
+		 */
+		public function pause():void {
+			trace(id + " PAUSED");
+			
+			deactivate();
+		}
+		
+		/**
+		 * All child classes must override `deactivate()` to unregister event listeners
+		 * and kill any processes that should not be running when the screen is not active.
+		 * 
+		 * Screens are deactivated when:
+			 * The app is paused
+			 * The app goes modal
+			 * The screen starts to transition out
+		 *
+		 * Remember to call super.deactivate() so all registered screen assets
+		 * are automatically deactivated as well.
+		 */
+		public function deactivate():void {
+			deactivateAssets();
+			
+			trace(id + " DEACTIVATED");
+		}
+		
+		/**
+		 * Deactivate all screen assets. Called by {@link /deactivate()}
+		 */
+		private function deactivateAssets():void {
+			trace("--------------------------------------\n" + id + " DEACTIVATING Assets");
+			for each (var asset:AssetView in _assets) {
+				asset.deactivate();
+			}
+		}
+		
+		/**
+		 * Child classes should override this if they wish to trigger an action
+		 * upon leaving the screen. This is called after {@link /deactivate()},
+		 * so you must assume that all assets are deactivated, event
+		 * listeners have been killed etc.
+		 */
+		public function onTransitionOut():void {
+			
 		}
 		
 		
@@ -269,7 +400,7 @@ package com.zeitguys.mobile.app.view {
 		 * @param	asset
 		 * @return
 		 */
-		public function registerAsset(asset:ScreenAssetView):ScreenAssetView {
+		public function registerAsset(asset:AssetView):AssetView {
 			if (_assets.indexOf(asset) == -1) {
 				addAsset(asset);
 			}
@@ -285,9 +416,10 @@ package com.zeitguys.mobile.app.view {
 		 * @param	asset
 		 * @return
 		 */
-		protected function addAsset(asset:ScreenAssetView):ScreenAssetView {
+		protected function addAsset(asset:AssetView):AssetView {
 			asset.screen = this;
 			_assets.push(asset);
+			
 			return asset;
 		}
 		
@@ -312,7 +444,7 @@ package com.zeitguys.mobile.app.view {
 		 * @param	parentItem
 		 * @return
 		 */
-		protected function addFlexAsset(flexGroup:FlexGroup, asset:ScreenAssetView, parentItem:FlexItem = null):FlexItem {
+		protected function addFlexAsset(flexGroup:FlexGroup, asset:AssetView, parentItem:FlexItem = null):FlexItem {
 			return flexGroup.addAsset(addAsset(asset), parentItem);
 		}
 		
@@ -355,158 +487,7 @@ package com.zeitguys.mobile.app.view {
 			return _TransitionOut;
 		}
 		
-		/**
-		 * Called by AppBase.screenTransitionComplete().
-		 * 
-		 * Resets the current `TransitionOut` to the `DefaultTransition`, then calls {@link activate()}.
-		 * 
-		 * Child screens may override this to do things post transition, but prior to activation.
-		 * 
-		 * If you are running any animations on the screen after the transition, but before activation,
-		 * you may use super.onTransitionComplete as your animation complete callback.
-		 */
-		public function onTransitionComplete():void {
-			_TransitionOut = _DefaultTransition;
-			
-			// If the app is bricked or suspending, then this will not fire.
-			if (app.isReady){
-				activate();
-			}
-		}
 		
-		/**
-		 * Override in child classes.
-		 * Screen has finished transitioning and has been activated. Note that this could happen multiple times within one screen "session" if the app is shutdown or paused.
-		 * This is where you should add any event listeners for interactivity, start animations, etc.
-		 * 
-		 * Be sure to call super.activate() at the END of your override, or you won't get automatic asset activation, which is pretty central to how this whole things works. 
-		 * Many child classes (eg: {@link ScrollingScreenView} have built-in logic here, so, really, super.activate();
-		 */
-		public function activate():void {
-			if (! app.isModal) {
-				activateAssets();
-				
-				trace(id + " ACTIVATED\n--------------------------------------");
-			} else {
-				trace(id + " NOT ACTIVATED: currently MODAL.");
-			}
-		}
-		
-		public function activateAssets():void {
-			trace(id + " ACTIVATING Assets");
-			for each (var asset:ScreenAssetView in _assets) { 
-				asset.activate();
-			}
-		}
-		
-		/**
-		 * Override in child classes when you wnat to handle reactivation from app paused state.
-		 */
-		public function resume():void {
-			trace(id + " RESUMING");
-			
-			activate();
-		}
-		
-		/**
-		 * Called when a modal dialog is dismissed on this screen.
-		 * 
-		 * Child classes can override this method in order to restore anything
-		 * that might have been halted on {@link /enterModal()}.
-		 * 
-		 * Remember to call super.exitModal().
-		 */
-		public function exitModal():void {
-			trace(id + " exiting MODAL");
-			
-			activate();
-		}
-		
-		/**
-		 * Called when a modal dialog is invoked on this screen.
-		 * 
-		 * Child classes can override this method in order to do something specifially
-		 * when a modal is invoked.
-		 * 
-		 * Remember to call super.enterModal().
-		 */
-		public function enterModal():void {
-			trace(id + " entering MODAL");
-			
-			deactivate();
-		}
-		
-		/**
-		 * Override in child classes when you want to handle deactivation due to app pausing.
-		 */
-		public function pause():void {
-			trace(id + " PAUSED");
-			
-			deactivate();
-		}
-		
-		/**
-		 * All child classes must override `deactivate()` to unregister event listeners
-		 * and kill any processes that should not be running when the screen is not active.
-		 * 
-		 * Screens are deactivated when:
-			 * The app is paused
-			 * The app goes modal
-			 * The screen starts to transition out
-		 *
-		 * Remember to call super.deactivate() so all registered screen assets
-		 * are automatically deactivated as well.
-		 */
-		public function deactivate():void {
-			deactivateAssets();
-			
-			trace(id + " DEACTIVATED");
-		}
-		
-		/**
-		 * Deactivate all screen assets. Called by {@link /deactivate()}
-		 */
-		private function deactivateAssets():void {
-			trace("--------------------------------------\n" + id + " DEACTIVATING Assets");
-			for each (var asset:ScreenAssetView in _assets) {
-				asset.deactivate();
-			}
-		}
-		
-		/**
-		 * Child classes should override this if they wish to trigger an action
-		 * upon leaving the screen. This is called after {@link /deactivate()},
-		 * so you must assume that all assets are no deactivated, event
-		 * listeners have been killed etc.
-		 */
-		public function onTransitionOut():void {
-			
-		}
-		
-		
-		
-		
-		
-		/**
-		 * Screen has been loaded and now we are sure to have a _clip. But it may not yet be added to the stage.
-		 * 
-		 * @see /onClipLoaded()
-		 * 
-		 * @param	event
-		 */
-		private function onScreenLoaded():void {
-			// This is a good time to capture the original coordinates of the clip.
-			_clipOrigX = _clip.x;
-			_clipOrigY = _clip.y;
-			
-			onClipLoaded();
-			
-			if (_clip.parent) { 
-				onAdded();
-			} else {
-				_clip.addEventListener(Event.ADDED, onAdded, false, 0, true);
-			}
-		}
 		
 		/**
 		 * Initialize the screen. This sequences all the start-up activities that will
@@ -519,7 +500,7 @@ package com.zeitguys.mobile.app.view {
 		 */
 		private function onAdded(event:Event = null):void {
 			if (event){
-				_clip.removeEventListener(Event.ADDED, onAdded);
+				clip.removeEventListener(Event.ADDED, onAdded);
 			}
 			
 			initStage();
@@ -528,10 +509,12 @@ package com.zeitguys.mobile.app.view {
 		public function set bundle(bundle:ScreenBundle):void {
 			_bundle = bundle;
 			
-			if (null == _clip) {
-				if (_bundle.loaded && _clipName) {
-					_clip = bundle.getClipByName(_clipName);
-					if (_clip) {
+			if (hasClip) {
+				if (_bundle.loaded && name) {
+					_bundleLoaded = true;
+					
+					_setClip(bundle.getClipByName(name));
+					if (clip) {
 						prepare();
 					}
 				}
@@ -545,11 +528,7 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		public function get router():ScreenRouter {
-			if (! _screenRouter) {
-				_screenRouter = ScreenRouter.getInstance();
-			}
-			
-			return _screenRouter;
+			return app.router;
 		}
 		
 		/**
@@ -613,25 +592,66 @@ package com.zeitguys.mobile.app.view {
 		}
 		
 		/**
-		 * Prepares the screen by ensuring that it has a proper _clip (once the Bundle has loaded).
+		 * Attempts to prepare the screen by ensuring that it has a proper clip (once the Bundle has loaded).
 		 * If all is ready, will fire {@link #setScreenLoaded()} which will trigger EVENT_SCREEN_LOADED
 		 */
 		public function prepare():void {
-			if (! screenLoaded) {
-				if (_bundle && _bundle.loaded) {
-					_bundleLoaded = true;
+			if (screenLoaded && hasClip) {
+				return;
+			}
+			
+			// Only look for the clip if the bundle is actually loaded.
+			if (_bundle && _bundle.loaded) {
+				_bundleLoaded = true;
+			
+				if (! hasClip && name) {
+					_setClip(_bundle.getClipByName(name));
 				}
+			}
+			
+			// We may already have set the clip, if it was
+			// passed in as a DisplayObject in the constructor
+			if (hasClip){
+				setScreenLoaded();
+			}
+		}
+		
+		public function get screenLoaded():Boolean {
+			return _screenLoaded;
+		}
+		
+		protected function setScreenLoaded():void {
+			if (! _screenLoaded) {
+				_screenLoaded = true;
 				
-				if (_bundleLoaded && ! _clip && _clipName) {
-					_clip = _bundle.getClipByName(_clipName);
-				}
+				status = STATUS_SCREEN_LOADED;
 				
-				if (_bundleLoaded && _clip){
-					setScreenLoaded();
+				
+				// This is a good time to capture the original coordinates of the clip.
+				_clipOrigX = clip.x;
+				_clipOrigY = clip.y;
+				
+				onClipLoaded();
+				
+				if (clip.parent) { 
+					onAdded();
+				} else {
+					clip.addEventListener(Event.ADDED, onAdded, false, 0, true);
 				}
 			}
 		}
 		
+		protected function setScreenReady():void {
+			if  (! _screenReady) {
+				_screenReady = true;
+				
+				status = STATUS_READY;
+			}
+		}
+		
+		/**
+		 * Transition screen status and trigger the appropriate event
+		 */
 		protected function set status(status:String):void {
 			if (status !== _status) {
 				_status = status;
@@ -649,35 +669,13 @@ package com.zeitguys.mobile.app.view {
 			}
 		}
 		
-		public function get screenLoaded():Boolean {
-			return _screenLoaded;
-		}
-		
-		protected function setScreenLoaded():void {
-			if (! _screenLoaded) {
-				_screenLoaded = true;
-				
-				status = STATUS_SCREEN_LOADED;
-				onScreenLoaded();
-			}
-		}
-		
-		protected function setScreenReady():void {
-			if  (! _screenReady) {
-				_screenReady = true;
-				
-				status = STATUS_READY;
-			}
-		}
-		
-		
 		
 		/**
 		 * Define the list of assets (buttons, textboxes, interactive elements) that are present in this Screen.
 		 * @param	assets
 		 */
-		protected function addAssets(assets:Vector.<ScreenAssetView>):void {
-			for each(var asset:ScreenAssetView in assets) {
+		protected function addAssets(assets:Vector.<AssetView>):void {
+			for each(var asset:AssetView in assets) {
 				addAsset(asset);
 			}
 		}
@@ -709,8 +707,8 @@ package com.zeitguys.mobile.app.view {
 			}
 			id += "__";
 			
-			if (_clipName) {
-				id += _clipName;
+			if (name) {
+				id += name;
 			} else {
 				id += "<no_clip>";
 			}
@@ -721,7 +719,7 @@ package com.zeitguys.mobile.app.view {
 		/**
 		 * The ID of the screen is a concatenation of its bundle and its clipname, eg: main__home
 		 */
-		override public function get id():String {
+		public function get id():String {
 			return _id;
 		}		
 		
@@ -732,39 +730,71 @@ package com.zeitguys.mobile.app.view {
 		 *                                                   MODALS
 		/* ===========================================================================================================*/
 		
-		protected function addModal(id:String, bodyText:String = "", ... modalArgs):ModalView {
-			trace("Adding Screen Modal [" + id + "]");
+		/**
+		 * Child screens and screen assets can query the ScreeView to see whether a particular modal has been defined.
+		 * 
+		 * Can be used to avoid the ArgumentError thrown by setModal.
+		 * 
+		 * @param	id
+		 * @return
+		 */
+		public function hasModal(id:String):Boolean {
+			return _screenModals.hasOwnProperty(id);
+		}
+		
+		/**
+		 * Sets the app modal to the modal identified by `id`.
+		 * 
+		 * @throws ArgumentError if that modal has not yet been defined by {@link addModal()}.
+		 * @param	id
+		 * @return
+		 */
+		public function setModal(id:String):ModalView {
+			var modal:ModalView = getModal(id);
 			
-			var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
-			_screenModals[id] = modal;
+			if (modal){
+				app.currentModal = modal;
+			} else {
+				throw new ArgumentError("Screen '" + _id + "' has no Modal defined for '" + id + "'.");
+			}
 			
 			return modal;
 		}
 		
 		/**
-		 * Abstract method. Override in child classes as needed. This is the best place to define your Screen's Modals,
-		 * using addModal().
+		 * Child screens and screen assets use this to "register" a modal with the Screen.
 		 * 
-		 * @param	localizer
+		 * @see ModalFactory.getModal()
+		 * 
+		 * @param	id
+		 * @param	bodyText
+		 * @param	... modalArgs
+		 * @return
 		 */
-		protected function defineModals(localizer:Localizer):void {
+		public function addModal(id:String, bodyText:String = "", ... modalArgs):void {
+			trace("Adding Screen Modal [" + id + "]");
 			
+			//var modal:ModalView = app.getModal.apply(this, [bodyText].concat(modalArgs));
+			//_screenModals[id] = modal;
+			
+			_screenModals[id] = { bodyText : bodyText, modalArgs : modalArgs };
 		}
 		
+		/**
+		 * Late instantiation of ModalView
+		 * 
+		 * @see AppBase.getModal()
+		 * 
+		 * @param	id
+		 * @return
+		 */
 		protected function getModal(id:String):ModalView {
 			if (_screenModals.hasOwnProperty(id)) {
-				return ModalView(_screenModals[id]);
+				//return ModalView(_screenModals[id]);
+				return app.getModal.apply(this, [_screenModals[id].bodyText].concat(_screenModals[id].modalArgs));
 			} else {
 				throw new RangeError("Modal with ID '" + id + "' has not been defined!");
 			}
-		}
-		
-		protected function setModal(id:String):ModalView {
-			var modal:ModalView = getModal(id);
-			
-			app.currentModal = modal;
-			
-			return modal;
 		}
 		
 		protected function getModalComponentText(localizer:Localizer, alertID:String, component:String):String {

@@ -114,7 +114,7 @@ package com.zeitguys.mobile.app.model {
 		}
 		
 		/**
-		 * Override in child classes.
+		 * Override in child classes. Called before any _loadError callback is executed.
 		 */
 		protected function loadError():void {
 			
@@ -206,6 +206,14 @@ package com.zeitguys.mobile.app.model {
 			
 			_onLoadComplete = null;
 			_onLoadError = null;
+		}
+		
+		public function get assetURL():String {
+			return _request.url;
+		}
+		
+		public function get assetName():String {
+			return assetURL.match(/[^\/\\]+$/)[0];
 		}
 		
 	}

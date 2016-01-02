@@ -34,20 +34,6 @@
 		protected var _assetLoader:AssetLoader = AssetLoader.getInstance();
 		
 		
-		public function get isLoaded():Boolean {
-			return _isLoaded;
-		}
-		
-		public function get theme():Object {
-			if (_data) {
-				return Object(_data.child('theme'));
-			}
-			return { };
-		}
-		
-		public function get styleSheet():StyleSheet {
-			return _stylesheet;
-		}
 		
 		public function AppConfigModel(url:String = "") {
 			_url = url;
@@ -82,11 +68,14 @@
 				removeListeners();
 			}
 		}
-	
-	
 		
 		/**
 		 * Called by a successful load.
+		 * 
+		 * Automatically loads the stylesheet if it's defined in the configuration XML.
+		 * 
+		 * You can also load the StyleSheet manually from the app by calling AppConfigModel.set styleSheet()
+		 * 
 		 * @param	event
 		 */
 		protected function onLoadComplete(event:Event):void {
@@ -94,35 +83,35 @@
 			_data = new XML(_loader.data);
 			_isLoaded = true;
 			dispatchEvent(new Event(EVENT_CONFIG_LOADED));
-			if (_data.elements('theme').elements('stylesheet')) {
-				initializeStylesheet();
+			
+			if (_data.elements('theme').elements('stylesheet').length()) {
+				loadStyleSheet(_data.elements('theme').elements('stylesheet'));
 			}
+			
 			removeListeners();
 		}
 		
-		private function initializeStylesheet():void {
-			var cssLoader:CSSLoaderAsset = new CSSLoaderAsset(new URLRequest(_data.elements('theme').elements('stylesheet')), onStylesLoaded, onStylesError);
+		public function loadStyleSheet(sheetURL:String):void {
+			var sheetUrlRequest:URLRequest = new URLRequest(sheetURL);
+				
+			if (! sheetUrlRequest) {
+				throw new Error("'" + sheetURL + "' is not a valid URL for the StyleSheet");
+			}
+			
+			var cssLoader:CSSLoaderAsset = new CSSLoaderAsset(sheetUrlRequest, onStylesLoaded, onStylesError);
 			_assetLoader.addItem(cssLoader);
 		}
 		
-		/**
-		 * Sets the stylesheet using the Setter, so we also register it with TextUtils
-		 * @param	loadedStylesheet
-		 */
 		private function onStylesLoaded(loadedStylesheet:StyleSheet):void {
-			styleSheet = loadedStylesheet
+			TextUtils.styleSheet = _stylesheet = loadedStylesheet;
 		}
 		
-		/**
-		 * Sets the stylesheet on the model, but also registers is with TextUtils,
-		 * since TextUtils won't have a reference to the App (or this model).
-		 */
-		public function set styleSheet(sheet:StyleSheet):void {
-			_stylesheet = TextUtils.styleSheet = sheet;
+		public function get styleSheet():StyleSheet {
+			return _stylesheet;
 		}
 		
-		private function onStylesError():void {
-			trace('CSS styles Load ERROR.');
+		private function onStylesError(asset:LoaderAsset, message:String):void {
+			trace('CSS styles Load ERROR: ' + message);
 		}
 		
 		/**
@@ -146,43 +135,47 @@
 			_request = null;
 		}
 		
-		public function get defaultLanguage():String {
-			return _data.child('languages').attribute('default_language');
-		}
-		
 		public function get currentLanguage():String {
 			return getLocal('language');
 		}
 		
 		public function set currentLanguage(language:String):void {
-			trace('setting app language to remember', language);
-			
 			setLocal('language', language);
 		}
 		
-		public function get languages():Array {
-			var languages:XMLList = _data.child('languages').children();
-			var output:Array = new Array();
-			for (var i:uint = 0; i < languages.length(); i++) {
-				output.push({ value: languages[i].attribute('code'), label: languages[i] });
-			}
-			
-			return output;
+		public function get isLoaded():Boolean {
+			return _isLoaded;
 		}
 		
-		public function getLanguageLabel(language:String = ''):String {
-			language ||= defaultLanguage;
-			for (var i:uint = 0; i < languages.length; i++) {
-				if (language == languages[i].value) {
-					return languages[i].label;
-				}
+		public function get theme():Object {
+			if (_data) {
+				return Object(_data.child('theme'));
 			}
-			
-			return '';
+			return { };
 		}
 		
 		public function get data():XML {
 			return _data;
+		}
+		
+		/**
+		 * Dig into the _data XML, and optionally provide a default value if the data doesn't exist.
+		 * 
+		 * @param	key
+		 * @param	attribute
+		 * @param	defaultValue
+		 * @return
+		 */
+		protected function getData(key:String, attribute:String = "", defaultValue:* = null):* {
+			if (! _data || ! _data.child(key).length) {
+				return defaultValue;
+			}
+			
+			if (attribute) {
+				return _data.child(key).attribute(attribute) || defaultValue;
+			}
+			
+			return _data.child(key) || defaultValue;
 		}
 		
 		/**

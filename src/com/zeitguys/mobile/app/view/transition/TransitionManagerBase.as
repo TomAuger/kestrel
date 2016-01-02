@@ -102,8 +102,7 @@
 					
 					setTransitionModule(_previousScreen.TransitionOut);
 					
-					
-					trace("-------------------------------------------\nStarting TRANSITION", _TransitionModuleClass);
+					trace(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\nStarting TRANSITION", _TransitionModuleClass);
 					if (_transitionOrder == TRANSITION_ORDER_OUT_FIRST) {
 						// Register both transitions before calling transitionModule
 						// Otherwise a default transition (eg: TransitionBase) that triggers
@@ -128,7 +127,7 @@
 				_currentScreen = newScreen;
 				setTransitionModule(_defaultTransition);
 				
-				trace("-------------------------------------------\nStarting FIRST TRANSITION", _TransitionModuleClass);
+				trace(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\nStarting FIRST TRANSITION", _TransitionModuleClass);
 				registerTransitionIn();
 				transitionModule.startFirstTransition();
 			}

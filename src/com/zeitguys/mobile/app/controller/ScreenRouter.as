@@ -1,13 +1,19 @@
-package com.zeitguys.mobile.app.model {
+﻿package com.zeitguys.mobile.app.controller {
 	import com.zeitguys.mobile.app.AppBase;
 	import com.zeitguys.mobile.app.view.ScreenView;
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
+	import com.zeitguys.mobile.app.model.ScreenBundle;
+	import com.zeitguys.mobile.app.model.IScreenList;
+	import com.zeitguys.mobile.app.model.AssetLoader;
+	import com.zeitguys.mobile.app.model.ScreenBundleLoaderAsset;
+	
 	/**
 	 * Singleton.
 	 * 
-	 * This is the model for the overall application flow. It should not contain any business logic about specific screens, but just what screen we're on,
-	 * what our history is (in case we have "Back button" functionality, and the complete list of all screens in the app.
+	 * This is the controller for the overall application flow. It should not contain any business logic about specific screens, but just what screen we're on,
+	 * what our history is (in case we have "Back button" functionality), and the complete list of all screens in the app.
 	 * 
 	 * It also does not know anything about __how__ the screens are going to be displayed. It does not have a reference to any DisplayList and doesn't know about the TransitionManager.
 	 * 
@@ -29,21 +35,24 @@ package com.zeitguys.mobile.app.model {
 		protected var _screenArgs:Object = {};
 		
 		protected var _bundlesLoaded:Boolean = false;
-		
-		protected var _loader:AssetLoader = AssetLoader.getInstance();
+		protected var _bundles:Vector.<ScreenBundle> = new <ScreenBundle>[];
+		protected var _bundleIDs:Object = { };
 		
 		private static var __instance:ScreenRouter;
 		
+
+		
 		/**
-		 * Singleton access to model.
-		 * @return The singleton instance.
+		 * Constructor. Shouldn't be called more than once. Quasi-singleton.
 		 */
-		public static function getInstance():ScreenRouter {
-			if (! __instance) {
-				__instance = new ScreenRouter();
+		public function ScreenRouter(app:AppBase) {
+			if (__instance) {
+				trace("WARNING: Asking for a second instance of ScreenRouter. Get a reference from `AppBase.get router()` instead.");
+				throw new Error();
 			}
 			
-			return __instance;
+			_app = app;
+			__instance = this;
 		}
 		
 		/**
@@ -55,8 +64,10 @@ package com.zeitguys.mobile.app.model {
 		 * 
 		 * By default, will advance the history (ie: keep a reference to the previous screen in the history and increase the index) and will trigger EVENT_SCREEN_CHANGED.
 		 * 
+		 * @TODO there's a condition where if a screen triggers setScreen() while within its setup sequence (setup, localize, reset), the previous setScreen() continues after all that is done.
+		 * 
 		 * @param	screen 			String|ScreenView. If String, expects a valid Screen ID.
-		 * @param	resetView	
+		 * @param	resetView		Whether to run reset() on the screen during the setup sequence
 		 * @param	triggerEvent	Whether to trigger EVENT_SCREEN_CHANGED
 		 * @param	args			Additional args. If there are any, 
 		 */
@@ -95,7 +106,7 @@ package com.zeitguys.mobile.app.model {
 					screenArgs = { };
 				}
 				
-				trace("---------------------------------------------\nSetting SCREEN to: " + newScreen.id);
+				trace("======================================\nSetting SCREEN to: " + newScreen.id);
 				_screenHistory[_screenHistoryIndex] = newScreen;
 				
 				//debugHistory();
@@ -105,10 +116,6 @@ package com.zeitguys.mobile.app.model {
 				// If a resetView was requested, turn it on.
 				// The App or screens can query this to determine whether they want to reset their view / model.
 				_currentScreenResetRequested = resetView;
-			
-				// Run setup() every time, before localize()
-				// NOTE: This is DEPRECATED!
-				newScreen.setup();
 				
 				// Set args on the incoming screen, usually passed from the setScreen() method.
 				newScreen.screenArgs = screenArgs;
@@ -179,17 +186,39 @@ package com.zeitguys.mobile.app.model {
 		/**
 		 * Rewind to the first screen in the ScreenBundle. The default behaviour is to reset the previous screen.
 		 * 
+		 * @param	bundle Optional. The ScreenBundle we want to switch to. If not provided, will attempt to get the first screen of the current screen's bundle.
 		 * @param	resetView
 		 * @param	triggerEvent
-		 * @return
+		 * @return	screen ID or null
 		 */
-		public function firstScreenInBundle(resetView:Boolean = true, triggerEvent:Boolean = true, args:Object = null):String {
-			if (currentScreen) {
-				var firstScreen:ScreenView = currentScreen.bundle.getScreenByIndex(0);
-				if (firstScreen) {
-					return setScreen(firstScreen, resetView, triggerEvent, args);
+		public function firstScreenInBundle(bundle:* = null, resetView:Boolean = true, triggerEvent:Boolean = true, args:Object = null):String {
+			var firstScreen:ScreenView;
+			var screenBundle:ScreenBundle;
+			
+			if (bundle) {
+				if (bundle is ScreenBundle) {
+					screenBundle = ScreenBundle(bundle);
+				} else if (bundle is String) {
+					screenBundle = getBundleByID(bundle);
+				}
+				
+				if (screenBundle){
+					firstScreen = screenBundle.getScreenByIndex(0);
+				} else {
+					throw new ArgumentError("Argument 'bundle' must be either a ScreenBundle or a ScreenBundle ID (String).");
+				}
+			} else {
+				if (currentScreen) {
+					firstScreen = currentBundle.getScreenByIndex(0);
 				}
 			}
+			
+			if (firstScreen) {
+				return setScreen(firstScreen, resetView, triggerEvent, args);
+			} else {
+				throw new Error("Could not determine FirstScreen.");
+			}
+			
 			return null;
 		}
 		
@@ -198,7 +227,7 @@ package com.zeitguys.mobile.app.model {
 			if (! bundle) {
 				var idParts:Array = screenID.split("__", 2);
 				if (idParts.length == 2){
-					bundle = ScreenBundle.getBundleByID(idParts[0]);
+					bundle = getBundleByID(idParts[0]);
 				} else {
 					bundle = currentScreen.bundle;
 				}
@@ -223,15 +252,8 @@ package com.zeitguys.mobile.app.model {
 		}
 		
 		/**
-		 * Constructor.
-		 */
-		public function ScreenRouter() {
-		
-		}
-		
-		/**
 		 * Process the ScreenList, which defines the Bundles and all the Screens in each Bundle.
-		 * This will also enqueue them into the AssetLoader, which may start the loader if it's not already loading something.
+		 * This will also enqueue them into the AssetLoader, which may start the assetLoader if it's not already loading something.
 		 * 
 		 * Note: there can be sequencing issues if you're not careful: the ScreenList already instantiates the ScreenBundles and ScreenViews,
 		 * but they're not necessarily even loaded so may not yet have their assets. Look to {@link ScreenView} to see the list of hooks you have access to
@@ -242,17 +264,63 @@ package com.zeitguys.mobile.app.model {
 		public function processScreenList(screenList:IScreenList):void {
 			var bundles:Vector.<ScreenBundle> = screenList.getScreenBundles();
 			
-			// Load the bundles
+			// Add each bundle to our bundle list, and if the bundle needs loading, added it to the AssetLoader queue.
 			for each (var bundle:ScreenBundle in bundles) {
+				addBundle(bundle);
+				
 				if (! bundle.loaded) {
-					var asset:ScreenBundleLoaderAsset = new ScreenBundleLoaderAsset(bundle.request, bundle, onBundleLoadComplete, onBundleLoadError);
-					
-					_loader.addItem(asset);
+					assetLoader.addItem(new ScreenBundleLoaderAsset(bundle.request, bundle, onBundleLoadComplete, onBundleLoadError));
 				}
 			}
 			
 			trace( "ScreenList PROCESSING complete");
 		}
+		
+		/**
+		 * Adds the bundle to the list of bundles. 
+		 * 
+		 * @param	bundle
+		 * @return	The bundle ID (defined on the Bundle itself)
+		 */
+		public function addBundle(bundle:ScreenBundle):String {
+			var bundleIndex:uint = _bundles.length;
+			
+			if (bundle.id) {
+				bundle.index = bundleIndex;
+				_bundleIDs[bundle.id] = bundleIndex;
+				_bundles.push(bundle);
+				
+				return bundle.id;
+			} else {
+				throw new IllegalOperationError("Bundle must have an ID.");
+			}
+		}
+		
+		
+		/**
+		 * Fetch the ScreenBundle identified by bundleID
+		 * 
+		 * @param	bundleID
+		 * @return
+		 */
+		public function getBundleByID(bundleID:String):ScreenBundle {
+			if (bundleID in _bundleIDs){
+				return _bundles[_bundleIDs[bundleID]];
+			} else {
+				trace("Requested bundle (" + bundleID + ") not found.");
+				return null;
+			}
+		}
+		
+		public function getBundleByIndex(index:uint):ScreenBundle {
+			if (_bundles.length > index) {
+				return _bundles[index];
+			} else {
+				trace("Requesed bundle index (" + index + ") out of range!");
+				return null;
+			}
+		}
+		
 		
 		public function onBundleLoadComplete(bundle:ScreenBundle, success:Boolean):void {
 			
@@ -262,16 +330,12 @@ package com.zeitguys.mobile.app.model {
 			trace("Bundle Load Error: " + error);
 		}
 		
-		public function set app(app:AppBase):void {
-			_app = app;
-		}
-		
-		public function get app():AppBase {
+		protected function get app():AppBase {
 			return _app;
 		}
 		
-		public function get loader():AssetLoader {
-			return _loader;
+		protected function get assetLoader():AssetLoader {
+			return app.assetLoader;
 		}
 		
 		public function get bundlesLoaded():Boolean {
