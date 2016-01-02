@@ -16,7 +16,7 @@ package com.zeitguys.mobile.ios {
 		public static const DEVICE_MODEL_IPHONE:String = "iphone";
 		public static const DEVICE_MODEL_IPAD:String = "ipad";
 		
-		private var _deviceResolution:String = RESOLUTION_RETINA;
+		private var _deviceResolution:String;
 		private var _assetResolution:String = RESOLUTION_RETINA;
 		private var _deviceModel:String;
 		
@@ -33,14 +33,14 @@ package com.zeitguys.mobile.ios {
 		
 		override public function get deviceModel():String {
 			var dimensions:Rectangle;
+			//var dimension:uint = ORIENTATION_PORTRAIT ==
 			
 			// Return cached
 			if (_deviceModel) return _deviceModel;
 			
 			dimensions = getDevicePixelDimensions();
 			
-			switch (dimensions.height) 
-			{
+			switch (dimensions.height) {
 				case 480: // iPhone 3G/iPod 3G
 				case 960: // iPhone 4/iPod 4G
 				case 1136: // iPhone 5
