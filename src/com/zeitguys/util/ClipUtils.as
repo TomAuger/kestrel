@@ -2,6 +2,9 @@ package com.zeitguys.util {
 	import com.zeitguys.mobile.app.error.FlashConstructionError;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.MovieClip;
+	import flash.system.ApplicationDomain;
+	import flash.utils.getDefinitionByName;
 	
 	/**
 	 * ...
@@ -70,7 +73,23 @@ package com.zeitguys.util {
 			return null;
 		}
 		
-		
+		/**
+		 * Convenient way to get a MovieClip out of a loaded library.
+		 * 
+		 * @param	exportClassName
+		 * @return
+		 */
+		public static function getRequiredLibraryClip(exportClassName:String):MovieClip {
+			var ClipClass:Class;
+			
+			if (ApplicationDomain.currentDomain.hasDefinition(exportClassName)) {
+				ClipClass = getDefinitionByName(exportClassName) as Class;
+				
+				return MovieClip(ClipClass);
+			} else {
+				throw new FlashConstructionError("Library", exportClassName, "in SWF");
+			}
+		}
 		
 		
 		
