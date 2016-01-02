@@ -57,8 +57,16 @@ package com.zeitguys.mobile.app.model {
 		
 		/**
 		 * Adds a LoaderAsset item to the queue. If the queue is empty, kick off loading.
+		 * 
+		 * You may wish to wrap addItem() in an if() clause, to trap for incorrect file packaging issues.
+		 * 
+		 * Note that due to idiosyncrasies of Flash CC, you MUST include all packaged assets in
+		 * a subfolder of the folder that the main.swf is published to. This is not for mobile publishing,
+		 * but for debugging, which completely ignores the included folder.
+		 * 
+		 * 
 		 * @param	item
-		 * @return	The new length of the queue.
+		 * @return	The new length of the queue, or 0 in case of error.
 		 */
 		public function addItem(item:LoaderAsset):uint {
 			if (!File.applicationDirectory.resolvePath(item.url).exists)
