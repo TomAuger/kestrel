@@ -85,7 +85,7 @@ package com.zeitguys.util {
 			if (ApplicationDomain.currentDomain.hasDefinition(exportClassName)) {
 				ClipClass = getDefinitionByName(exportClassName) as Class;
 				
-				return MovieClip(ClipClass);
+				return MovieClip(new ClipClass());
 			} else {
 				throw new FlashConstructionError("Library", exportClassName, "in SWF");
 			}
