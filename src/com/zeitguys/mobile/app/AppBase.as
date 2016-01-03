@@ -832,12 +832,6 @@ package com.zeitguys.mobile.app {
 			_transitionManager.removeEventListener(TransitionManagerBase.EVENT_TRANSITION_COMPLETE, onTransitionComplete);
 			inTransition = false;
 			
-			// If the appstate is "READY" because we debricked while in transition (is this even possible?)
-			// then set the appstate to ACTIVE.
-			if (APP_STATE_READY == appState) {
-				
-			}
-			
 			screenTransitionComplete(router.currentScreen);
 		}
 		
