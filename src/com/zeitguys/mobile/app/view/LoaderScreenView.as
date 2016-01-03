@@ -1,6 +1,5 @@
 package com.zeitguys.mobile.app.view 
 {
-	import assets.ProgressBarAssetView;
 	import com.zeitguys.mobile.app.model.AssetLoader;
 	import com.zeitguys.mobile.app.model.event.AssetLoaderEvent;
 	import com.zeitguys.mobile.app.model.ScreenBundle;
