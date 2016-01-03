@@ -63,7 +63,6 @@ package com.zeitguys.mobile.app {
 		private const ERROR_CONFIG_LOAD_ERROR:uint = 1;
 		
 		
-		protected var _supportsAutoOrients:Boolean = true;
 		protected var _defaultLanguageCode:String = "en_US";
 		protected var _resumeAppDelayFrames:uint = 0;
 		protected var _sleepFrames:uint = 0;
@@ -80,6 +79,7 @@ package com.zeitguys.mobile.app {
 		
 		protected var _appConfig:AppConfigModel;
 		protected var _appConfigFileURL:String;
+		protected var _appXML:XML;
 		
 		protected var _theme:Object;
 		
@@ -89,6 +89,7 @@ package com.zeitguys.mobile.app {
 		
 		private var _deviceSize:Rectangle;
 		private var _osVersion:uint;
+		private var _currentStageOrientation:String;
 		
 		private var _appState:String;
 		private var _inTransition:Boolean = false;
@@ -181,10 +182,14 @@ package com.zeitguys.mobile.app {
 			trace("Registering App with MainScreenBundle.");
 			MainScreenBundle.setApp(this);
 			
-			if (_supportsAutoOrients) {
-				stage.align = StageAlign.TOP_LEFT;
-				stage.scaleMode = StageScaleMode.NO_SCALE;
-			}
+			// Set these before attempting to record stage dimensions or orientation.
+			stage.align = StageAlign.TOP_LEFT;
+			stage.scaleMode = StageScaleMode.NO_SCALE;
+			
+			trace("Stage dimensions recorded at: ", stage.stageWidth, stage.stageHeight);
+			
+			stage.addEventListener(StageOrientationEvent.ORIENTATION_CHANGING, onOrientationChanging, false, 0, true);
+			stage.addEventListener(StageOrientationEvent.ORIENTATION_CHANGE, onOrientationChanged, false, 0, true);
 			
 			_osVersion = getDeviceOSVersion();
 			trace("OS: '" + deviceOS + "' Version: " + _osVersion + " detected");
@@ -301,6 +306,8 @@ package com.zeitguys.mobile.app {
 		 * @param	event
 		 */
 		protected function onAppLoaded(event:AssetLoaderEvent = null):void {
+			_assetLoader.removeEventListener(AssetLoaderEvent.LOADING_COMPLETE, onAppLoaded);
+			
 			if (event){
 				trace("All initial app assets loaded.");
 				// We can get more out of event.data (see AssetLoader.closeQueue), eg:
@@ -308,24 +315,78 @@ package com.zeitguys.mobile.app {
 				// trace("Load errors: " + event.data.numErrors);
 			}
 			
+			// This is the first time the app will be activated. activateApp() also gets called
+			// each time the app wakes from sleep, or from task switching (like after handling
+			// a phone call, for instance).
 			activateApp();
 			
 			trace("App Ready!\n**************************************");
 			appReady();
 		}
 		
+		
+		
+		/* ===================================================================================
+		 * App and device properties and methods
+		 * =================================================================================== */
+		
+		public function get appXML():XML {
+			if (! _appXML || ! _appXML.length()) {
+				_appXML = NativeApplication.nativeApplication.applicationDescriptor;
+			}
+			
+			return _appXML;
+		}
+		
+		/**
+		 * Attempt to return device orientation based on the stage dimensions.
+		 * 
+		 * If the stage is not available yet, then attempt to look at the application
+		 * descriptor for the default orientation. 
+		 * 
+		 * If that doesn't work, then assume ORIENTATION_PORTRAIT.
+		 * 
+		 * @return
+		 */
+		public function getDeviceOrientation():String {
+			var orientation:String;
+			
+			if (stage) {
+				if (stage.stageWidth > stage.stageHeight) {
+					return ORIENTATION_LANDSCAPE;
+				} else {
+					return ORIENTATION_PORTRAIT;
+				}
+			}
+			
+			if (appXML && appXML.length()) {
+				if ('any' == appXML.aspectRatio.toLowerCase()) {
+					return ORIENTATION_PORTRAIT;
+				}
+				
+				// The constants use the same strings as the application descriptor
+				return appXML.aspectRatio.toLowerCase();
+			}
+			
+			return ORIENTATION_PORTRAIT;
+		}
+		
 		/**
 		 * Gets the dimensions of the device in pixels. Can only be called after ADDED_TO_STAGE.
 		 * 
-		 * @param	orientation Optional. Pass in ORIENTATION_LANDSCAPE to flip the width and height values for readability
+		 * @param	orientation Optional. If you need the values in a specific orientation, pass one of the orientation constants.
 		 * @param	OSAdjustment Optional. Whether to allow the height to be adjusted in iOS6 to remove status bar from the top
 		 * @return
 		 */
-		public function getDevicePixelDimensions(orientation:String = ORIENTATION_PORTRAIT, OSAdjustment:Boolean = true):Rectangle {
+		public function getDevicePixelDimensions(orientation:String = "", OSAdjustment:Boolean = true):Rectangle {
+			if (! orientation) {
+				orientation = getDeviceOrientation();
+			}
+			
 			if (stage){
 				return new Rectangle(0, 0,
-					(ORIENTATION_PORTRAIT == orientation ? Math.min(stage.fullScreenWidth, stage.fullScreenHeight) : Math.max(stage.fullScreenWidth, stage.fullScreenHeight)),
-					(ORIENTATION_PORTRAIT == orientation ? Math.max(stage.fullScreenWidth, stage.fullScreenHeight) : Math.min(stage.fullScreenWidth, stage.fullScreenHeight))
+					(ORIENTATION_PORTRAIT == orientation ? Math.min(stage.stageWidth, stage.stageHeight) : Math.max(stage.stageWidth, stage.stageHeight)),
+					(ORIENTATION_PORTRAIT == orientation ? Math.max(stage.stageWidth, stage.stageHeight) : Math.min(stage.stageWidth, stage.stageHeight))
 				);
 			} else {
 				throw new ReferenceError("Can't get dimensions until app has been added to stage. Wait until app initialized before calling this function.");
@@ -615,6 +676,16 @@ package com.zeitguys.mobile.app {
 		
 		public function set inTransition(transitioning:Boolean):void {
 			_inTransition = transitioning;
+		}
+		
+		protected function onOrientationChanging(event:StageOrientationEvent):void {
+			trace("\n\n\nORIENTATION CHANGING", event.beforeOrientation, event.afterOrientation);
+		}
+		
+		protected function onOrientationChanged(event:StageOrientationEvent):void {
+			trace("\n\n\nORIENTATION CHANGED", event.beforeOrientation, event.afterOrientation);
+			_currentStageOrientation = event.afterOrientation;
+			trace("Stage dimensions recorded at: ", stage.stageWidth, stage.stageHeight);
 		}
 		
 		//****************************************************************************--------
