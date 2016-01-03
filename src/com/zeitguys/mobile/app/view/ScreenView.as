@@ -262,6 +262,10 @@
 		 * 
 		 * If you are running any animations on the screen after the transition, but before activation,
 		 * you may use `super.onTransitionComplete()` as your animation complete callback.
+		 * 
+		 * If you're just using this hook as the perfect place to kick off any screen animations, then
+		 * be sure to call `super.onTransitionComplete()` first, so the Screen gets activated while the animations
+		 * are running.
 		 */
 		public function onTransitionComplete():void {
 			_TransitionOut = _DefaultTransition;
