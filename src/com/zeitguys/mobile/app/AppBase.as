@@ -360,6 +360,9 @@ package com.zeitguys.mobile.app {
 			if (! this.isTransitioning) {
 				trace( "RESUMING APP! Sleep timer at " + _sleepFrames );
 				
+				appState = APP_STATE_ACTIVE;
+				activateApp();
+
 				if (_currentScreen) {
 					_currentScreen.resume();
 				}
@@ -367,8 +370,6 @@ package com.zeitguys.mobile.app {
 				if (isModal) {
 					_currentModal.activate();
 				}
-				activateApp();
-				appState = APP_STATE_ACTIVE;
 			} else {
 				trace("RESUMING APP delayed (currently in transition)");
 				appState = APP_STATE_READY;
@@ -632,9 +633,9 @@ package com.zeitguys.mobile.app {
 			inTransition = false;
 			
 			// If the appstate is "READY" because we debricked while in transition (is this even possible?)
-			// then set the appstate to ACTIVE.
+			// then we need to call resumeApp() again, because it was pretty much skipped due to the transition.
 			if (APP_STATE_READY == appState) {
-				
+				resumeApp();
 			}
 			
 			screenTransitionComplete(_screenRouter.currentScreen);
