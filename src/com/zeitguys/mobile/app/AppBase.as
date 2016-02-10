@@ -208,10 +208,10 @@ package com.zeitguys.mobile.app {
 		}
 		
 		/**
-		 * Override in child apps that need to use a custom AppConfigModel.
+		 * @see get appConfigModel() to learn how to use a custom AppConfigModel subclass
 		 */
 		protected function initializeConfig():void {
-			_appConfig = new AppConfigModel(appConfigURL);
+			_appConfig = appConfigModel;
 			
 			// Load the app config, or jump straight to onConfigLoaded().
 			if (appConfigURL) {
@@ -369,6 +369,14 @@ package com.zeitguys.mobile.app {
 		 */
 		protected function get appConfigURL():String {
 			return _appConfigFileURL;
+		}
+		
+		/**
+		 * Override in child apps if you need to use a custom class
+		 * that subclasses AppConfigModel.
+		 */
+		protected function get appConfigModel():AppConfigModel {
+			return new AppConfigModel(appConfigURL);
 		}
 		
 		
