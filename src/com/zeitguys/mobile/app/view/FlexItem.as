@@ -141,6 +141,7 @@ package com.zeitguys.mobile.app.view {
 		public function update() {
 			if (parent) {
 				_clip.y = parent.bottomY + _parentBottomOffsetY;
+				//trace("%% FlexItem Parent: " + parent._clipName + " bottom: " + parent.bottomY + " offset: " + _parentBottomOffsetY);
 			}
 			
 			//trace("%% FlexItem UPDATED: " + _clip.name + " clipY: " + _clip.y);
@@ -236,6 +237,8 @@ package com.zeitguys.mobile.app.view {
 			
 			if (_parent) {
 				// I wonder whether this is potentially "too late" in some cases?
+				// Yep. I can confirm: it IS too late in cases where you're building the item dynamically (during `init`)
+				// but the artwork contains the "unbuilt" item and the offset shold be based on that.
 				_parentBottomOffsetY = _initY - _parent.bottomY;
 			}
 		}
