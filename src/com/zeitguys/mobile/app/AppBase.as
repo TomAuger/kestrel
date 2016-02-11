@@ -310,6 +310,8 @@ package com.zeitguys.mobile.app {
 		 * @param	event
 		 */
 		protected function onAppLoaded(event:AssetLoaderEvent = null):void {
+			_assetLoader.removeEventListener(AssetLoaderEvent.LOADING_COMPLETE, onAppLoaded);
+			
 			if (event){
 				trace("All initial app assets loaded.");
 				// We can get more out of event.data (see AssetLoader.closeQueue), eg:
@@ -806,6 +808,11 @@ package com.zeitguys.mobile.app {
 		
 		protected function onLanguageChanged(e:Event):void {
 			localizer.removeEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
+			
+			var nextScreen:String = _nextScreen || _currentScreen.id;
+			var triggerEvent:Boolean = ! ( nextScreen === _currentScreen.id);
+			
+			router.setScreen(nextScreen, true, triggerEvent);
 			
 			dispatchEvent(new Event(EVENT_LANGUAGE_CHANGED));
 		}
