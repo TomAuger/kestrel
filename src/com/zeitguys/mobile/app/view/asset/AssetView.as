@@ -32,6 +32,12 @@ package com.zeitguys.mobile.app.view.asset
 		private var _disabled:Boolean = false;
 		
 		public function AssetView(assetClip:*, disabled:Boolean = false, localizableTextFieldName:String = "") {
+			// Define this first, in case we're given a DisplayObject and have to setClip right away
+			if (localizableTextFieldName) {
+				_textFieldName = localizableTextFieldName;
+			}
+			
+			
 			if (assetClip is DisplayObject) {
 				setClipName(DisplayObject(assetClip).name);
 				_setClip(DisplayObject(assetClip));
@@ -39,11 +45,6 @@ package com.zeitguys.mobile.app.view.asset
 				setClipName(assetClip);
 			} else {
 				throw new ArgumentError("Constructor argument 'clip' must be a DisplayObject instance name (String) or an actual DisplayObject instance");
-			}
-			
-			
-			if (localizableTextFieldName) {
-				_textFieldName = localizableTextFieldName;
 			}
 			
 			_disabled = disabled;
