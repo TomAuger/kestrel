@@ -78,8 +78,8 @@ package com.zeitguys.mobile.app {
 		protected var _currentModal:ModalView;
 		protected var _lastModalButtonSelected:String;
 		
-		protected var _appConfig:AppConfigModel;
-		protected var _appConfigFileURL:String;
+		protected var _appConfigModel:AppConfigModel;
+		protected var _appConfigModelFileURL:String;
 		
 		protected var _theme:Object;
 		
@@ -207,18 +207,48 @@ package com.zeitguys.mobile.app {
 			initializeConfig();
 		}
 		
+		
+		
+		
 		/**
-		 * @see get appConfigModel() to learn how to use a custom AppConfigModel subclass
+		 * Child apps can use this method to set the URL of their config XML file, if one is needed.
+		 * It must be set during `init` or earlier, as the appConfigModel is instantiated during `onAddedToStage`.
+		 * 
+		 * An alternate method is to simply override the getter to provide the hard-coded URL. 
+		 * @see get appConfigURL()
+		 */
+		protected function set appConfigURL(appConfigFileURL:String):void {
+			_appConfigModelFileURL = appConfigFileURL;
+		}
+		
+		/**
+		 * Child apps can override this to hard-code the config XML file's URL,
+		 * or you can set `appConfigURL` at init() or even within the App's constructor.
+		 */
+		protected function get appConfigURL():String {
+			return _appConfigModelFileURL;
+		}
+		
+		/**
+		 * Override in child apps if you need to use a custom class
+		 * that subclasses AppConfigModel.
+		 */
+		protected function setAppConfig() {
+			_appConfigModel = new AppConfigModel(appConfigURL);
+		}
+		
+		/**
+		 * @see setAppConfig() to learn how to use a custom AppConfigModel subclass
 		 */
 		protected function initializeConfig():void {
-			_appConfig = appConfigModel;
+			setAppConfig();
 			
 			// Load the app config, or jump straight to onConfigLoaded().
 			if (appConfigURL) {
 				trace("Loading AppConfig from '" + appConfigURL + "'.");
-				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
-				_appConfig.addEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
-				_appConfig.load();
+				_appConfigModel.addEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+				_appConfigModel.addEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+				_appConfigModel.load();
 			} else {
 				onConfigLoaded();
 			}
@@ -232,8 +262,8 @@ package com.zeitguys.mobile.app {
 		 * @param	event
 		 */
 		protected function onConfigError(event:Event):void {
-			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
-			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+			_appConfigModel.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+			_appConfigModel.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
 			
 			appState = APP_STATE_ERROR;
 			
@@ -251,8 +281,8 @@ package com.zeitguys.mobile.app {
 		 * @param	event
 		 */
 		protected function onConfigLoaded(event:Event = null):void {
-			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
-			_appConfig.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
+			_appConfigModel.removeEventListener(AppConfigModel.EVENT_CONFIG_LOADED, onConfigLoaded);
+			_appConfigModel.removeEventListener(AppConfigModel.EVENT_CONFIG_ERROR, onConfigError);
 			
 			appState = APP_STATE_READY;
 			
@@ -353,34 +383,6 @@ package com.zeitguys.mobile.app {
 		
 		
 		/**
-		 * Child apps can use this method to set the URL of their config XML file, if one is needed.
-		 * It must be set during `init` or earlier, as the appConfigModel is instantiated during `onAddedToStage`.
-		 * 
-		 * An alternate method is to simply override the getter to provide the hard-coded URL. 
-		 * @see get appConfigURL()
-		 */
-		protected function set appConfigURL(appConfigFileURL:String):void {
-			_appConfigFileURL = appConfigFileURL;
-		}
-		
-		/**
-		 * Child apps can override this to hard-code the config XML file's URL,
-		 * or you can set `appConfigURL` at init() or even within the App's constructor.
-		 */
-		protected function get appConfigURL():String {
-			return _appConfigFileURL;
-		}
-		
-		/**
-		 * Override in child apps if you need to use a custom class
-		 * that subclasses AppConfigModel.
-		 */
-		protected function get appConfigModel():AppConfigModel {
-			return new AppConfigModel(appConfigURL);
-		}
-		
-		
-		/**
 		 * the height of the status bar. Probably override in OS-specific subclasses.
 		 */
 		public function get statusBarHeight():uint {
@@ -412,11 +414,6 @@ package com.zeitguys.mobile.app {
 		public function get assetLoader():AssetLoader {
 			return _assetLoader;
 		}
-		
-		
-		
-		
-		
 		
 		
 		
@@ -817,7 +814,7 @@ package com.zeitguys.mobile.app {
 		 * Access the current language of the app.
 		 */
 		public function get currentLanguage():String {
-			return _appConfig.currentLanguage || _defaultLanguageCode;
+			return _appConfigModel.currentLanguage || _defaultLanguageCode;
 		}
 		
 		
@@ -829,25 +826,24 @@ package com.zeitguys.mobile.app {
 		// or you'll just have to set up some other, more cumbersome accessor method name.
 		
 		
+		
 		public function get theme():Object {
-			return _appConfig.theme;
+			return _appConfigModel.theme;
 		}
 		
 		
 		public function get styleSheet():StyleSheet {
-			return _appConfig.styleSheet;
+			return _appConfigModel.styleSheet;
 		}
 		
 		protected function loadStylesheet(stylesheetURL:String):void {
-			if (_appConfig) {
-				_appConfig.loadStyleSheet(stylesheetURL);
+			if (_appConfigModel) {
+				_appConfigModel.loadStyleSheet(stylesheetURL);
 			}
 		}
 		
 		
 		// ClipUtils
-		
-		
 		
 		/**
 		 * Dig through the display hierarchy of the clip to find a child DisplayObject with the requested instance name.
