@@ -176,28 +176,7 @@
 				modal:ModalView,
 				button:ModalButtonData;
 			
-			
 			defineModals(localizer);
-			
-			//if (_screenModals.length) {
-				//trace("Localizing Screen Modals.");
-			//}
-				//
-			//for (modalID in _screenModals) {
-				//item = _screenModals[modalID];
-				//if (item is ModalView) {
-					//modal = ModalView(item);
-					//
-					//// Got the modal. Localize it.
-					//modal.setBodyText(localizer.getModalComponentText(modalID, 'body'));
-					//
-					//for each (button in modal.buttons) {
-						//button.label = localizer.getModalComponentText(modalID, button.id);
-					//}
-				//} else {
-					//throw new Error("Error with Screen Modals structure.");
-				//}
-			//}
 			
 			for each(var asset:ILocalizable in _assets) {
 				asset.localize(localizer);
