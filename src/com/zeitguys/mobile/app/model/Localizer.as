@@ -143,6 +143,10 @@ package com.zeitguys.mobile.app.model {
 			return newLanguageCode;
 		}
 		
+		public function get defaultLanguage():String {
+			return _defaultLanguageCode;
+		}
+		
 		public function get currentLanguage():String {
 			return _currentLanguageCode || _defaultLanguageCode;
 		}

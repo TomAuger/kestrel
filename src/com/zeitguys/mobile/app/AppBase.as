@@ -64,12 +64,8 @@ package com.zeitguys.mobile.app {
 		
 		
 		protected var _supportsAutoOrients:Boolean = true;
-		protected var _defaultLanguageCode:String = "en_US";
 		protected var _resumeAppDelayFrames:uint = 0;
 		protected var _sleepFrames:uint = 0;
-		
-		
-		
 		
 		protected var _currentScreen:ScreenView;
 		protected var _nextScreen:String;
@@ -799,29 +795,56 @@ package com.zeitguys.mobile.app {
 			}
 		}
 		
+		/**
+		 * Pass an ISO region code, and optionally a screen to navigate to, and the Localizer will
+		 * load a new XML file for that region, assuming one exists, or will throw an error in the
+		 * event that it doesn't.
+		 * 
+		 * Once the new XML has loaded, and the localizer has switched language, the Localizer triggers
+		 * Localizer.EVENT_LANGUAGE_CHANGED, which handles the screen switching.
+		 * 
+		 * @param	languageCode
+		 * @param	nextScreen
+		 */
 		public function changeLanguage(languageCode:String, nextScreen:String = ''):void {
 			_nextScreen = nextScreen;
+			
+			_appConfigModel.currentLanguage = languageCode
 			
 			localizer.addEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
 			localizer.setLanguageWithFallback(languageCode);
 		}
 		
+		/**
+		 * Called by Localizer.EVENT_LANGUAGE_CHANGED once the Localizer has finished loading
+		 * the localized XML file and switched to that language for all string localizations.
+		 * 
+		 * If {@link changeLanguage()} was called with the `nextStreen` argument, it will
+		 * trigger the router to change screens, otherwise it will trigger the router to
+		 * re-load the current screen. Either of these two actions will re-start the screen
+		 * lifecycle, most notably including the `localize` phase, using the new locale setting.
+		 * 
+		 * Also triggers EVENT_LANGUAGE_CHANGED, which screens can specifically listen to in case
+		 * they need to do anything BEFORE the screen is shut down and the router kicks in.
+		 * 
+		 * @param	e
+		 */
 		protected function onLanguageChanged(e:Event):void {
 			localizer.removeEventListener(Localizer.EVENT_LANGUAGE_CHANGED, onLanguageChanged);
 			
 			var nextScreen:String = _nextScreen || _currentScreen.id;
 			var triggerEvent:Boolean = ! ( nextScreen === _currentScreen.id);
 			
-			router.setScreen(nextScreen, true, triggerEvent);
-			
 			dispatchEvent(new Event(EVENT_LANGUAGE_CHANGED));
+			
+			router.setScreen(nextScreen, true, triggerEvent);
 		}
 		
 		/**
 		 * Access the current language of the app.
 		 */
 		public function get currentLanguage():String {
-			return _appConfigModel.currentLanguage || _defaultLanguageCode;
+			return _appConfigModel.currentLanguage || localizer.currentLanguage;
 		}
 		
 		
