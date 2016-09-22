@@ -90,7 +90,7 @@ package com.zeitguys.mobile.ios {
 			}
 			
 			// In the simulator / desktop, let's got with Normal resolution
-			if ('Windows' == deviceOS) {
+			if ('Windows' == deviceOS || 'Mac OS' == deviceOS) {
 				_deviceResolution = RESOLUTION_NORMAL;
 				trace("Simulator detected.");
 			}
