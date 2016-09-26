@@ -47,7 +47,7 @@ package com.zeitguys.mobile.app.model {
 		}
 		
 		/**
-		 * Set the current screen. This is the primary method of ScreenController, and should be the ONLY way that screen changes
+		 * Set the current screen. This is the primary method of the ScreenRouter class, and should be the ONLY way that screen changes
 		 * are invoked, otherwise the entire screen chain breaks down and you won't get all the benefits of the framework.
 		 * 
 		 * This method does not need to be called directly. Indeed, often you will use {@link /nextScreenInBundle()} and {@link /previousScreenInBundle}
@@ -58,7 +58,7 @@ package com.zeitguys.mobile.app.model {
 		 * @param	screen 			String|ScreenView. If String, expects a valid Screen ID.
 		 * @param	resetView	
 		 * @param	triggerEvent	Whether to trigger EVENT_SCREEN_CHANGED
-		 * @param	args			Additional args. If there are any, 
+		 * @param	args			Additional screenArgs that are passed to the Screen
 		 */
 		public function setScreen(screen:*, resetView:Boolean = true, triggerEvent:Boolean = true, args:Object = null):String {
 			var newScreen:ScreenView;
