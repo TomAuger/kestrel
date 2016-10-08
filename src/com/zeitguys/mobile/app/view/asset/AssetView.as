@@ -189,16 +189,15 @@ package com.zeitguys.mobile.app.view.asset
 		 */
 		public function disable():void {
 			if (! _disabled){
-				
 				_disabled = true;
-				
-				onDisabled();
-				
-				trace("  - " + id + " DISABLED");
 				
 				if (_active) {
 					deactivate();
 				}
+
+				onDisabled();
+
+				trace("  - " + id + " DISABLED");
 			} else {
 				trace("  - " + id + " DISABLE skipped (already disabled)");
 			}
